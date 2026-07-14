@@ -1,0 +1,112 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: postgres_shopee
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - shopee_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+
+    restart: unless-stopped
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+
+    ports:
+      - "5050:80"
+
+    depends_on:
+      - postgres
+
+    networks:
+      - shopee_network
+
+  n8n:
+    image: n8nio/n8n:latest
+
+    container_name: n8n
+
+    restart: unless-stopped
+
+    ports:
+      - "5678:5678"
+
+    environment:
+
+      N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE}
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
+
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
+      TZ: ${TZ}
+
+    depends_on:
+      - postgres
+
+    volumes:
+      - ./n8n:/home/node/.n8n
+
+    networks:
+      - shopee_network
+
+  python:
+    build:
+      context: ./python
+
+    container_name: python_scraper
+
+    restart: unless-stopped
+
+    tty: true
+
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: shopee_affiliate
+      DB_USER: admin
+      DB_PASSWORD: 123456
+
+
+    volumes:
+      - ./python:/app
+      - ./database:/database
+      - ./data:/data
+
+    working_dir: /app/app
+
+    networks:
+      - shopee_network
+
+volumes:
+
+  postgres_data:
+
+networks:
+
+  shopee_network:
