@@ -1,4 +1,4 @@
-from database.connection import get_connection
+from core.database import get_connection
 
 
 class VideoRepository:
@@ -68,3 +68,29 @@ class VideoRepository:
     def close(self):
         self.cur.close()
         self.conn.close()
+        
+    def find_by_produto(self, produto_id):
+
+        conn = get_connection()
+
+        cur = conn.cursor()
+
+        cur.execute("""
+
+            SELECT *
+
+            FROM videos_produto
+
+            WHERE produto_id=%s
+
+            ORDER BY score DESC
+
+        """, (produto_id,))
+
+        rows = cur.fetchall()
+
+        cur.close()
+
+        conn.close()
+
+        return [Video.from_dict(row) for row in rows]

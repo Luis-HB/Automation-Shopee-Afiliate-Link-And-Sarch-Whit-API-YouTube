@@ -17,6 +17,7 @@ services:
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
 
     networks:
       - shopee_network
@@ -42,16 +43,11 @@ services:
 
   n8n:
     image: n8nio/n8n:latest
-
     container_name: n8n
-
     restart: unless-stopped
-
     ports:
       - "5678:5678"
-
     environment:
-
       N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE}
       N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
       N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
@@ -59,19 +55,16 @@ services:
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: postgres
       DB_POSTGRESDB_PORT: 5432
-      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_DATABASE: ${N8N_DB_NAME} # <- ALTERADO (Usa o banco dedicado do n8n)
       DB_POSTGRESDB_USER: ${POSTGRES_USER}
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
 
       GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
       TZ: ${TZ}
-
     depends_on:
       - postgres
-
     volumes:
       - ./n8n:/home/node/.n8n
-
     networks:
       - shopee_network
 
