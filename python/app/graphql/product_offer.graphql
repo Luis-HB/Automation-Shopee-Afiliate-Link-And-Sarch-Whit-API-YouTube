@@ -1,0 +1,69 @@
+query ProductOffer(
+    $keyword: String,
+    $page: Int,
+    $limit: Int,
+    $listType: Int,
+    $sortType: Int
+){
+
+    productOfferV2(
+
+        keyword: $keyword
+        page: $page
+        limit: $limit
+        listType: $listType
+        sortType: $sortType
+
+    ){
+
+        nodes{
+
+            itemId
+            shopId
+
+            productName
+
+            imageUrl
+
+            productLink
+
+            offerLink
+
+            priceMin
+            priceMax
+
+            priceDiscountRate
+
+            sales
+
+            ratingStar
+
+            commissionRate
+
+            sellerCommissionRate
+
+            shopeeCommissionRate
+
+            commission
+
+            shopName
+
+            shopType
+
+            periodStartTime
+
+            periodEndTime
+
+        }
+
+        pageInfo{
+
+            page
+            limit
+            hasNextPage
+
+        }
+
+    }
+
+}

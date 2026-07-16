@@ -12,6 +12,7 @@ from repositories.video_repository import VideoRepository
 from services.youtube_service import YouTubeService
 from services.search_query_builder import SearchQueryBuilder
 from services.video_ranking_service import VideoRankingService
+from services.contexto_produto_builder import ContextoProdutoBuilder
 
 from scrapers.oferta_parser import OfertaParser
 from scrapers.redirect_parser import RedirectParser
@@ -59,7 +60,7 @@ class PromobitScraper:
 
     def executar(self, limite=5):
 
-        produtos = []
+        contextos = []
 
         ofertas = self.listar_ofertas()
 
@@ -81,7 +82,6 @@ class PromobitScraper:
 
                 dados = self.detalhar_oferta(url)
 
-                # Ignora cupons
                 if dados["tipo"] == "CUPOM":
 
                     print(f"Ignorando cupom: {dados['titulo']}")
@@ -98,15 +98,32 @@ class PromobitScraper:
                     print("Produto salvo sem ID.")
                     continue
 
-                # -------------------------------------------------
-                # Busca vídeos no YouTube
-                # -------------------------------------------------
+                # =====================================================
+                # Builder do contexto
+                # =====================================================
+
+                builder = ContextoProdutoBuilder()
+
+                builder.produto(produto)
+
+                builder.metadata(
+                    url_promobit=url,
+                    url_shopee=produto.url_shopee
+                )
+
+                # =====================================================
+                # Busca vídeos
+                # =====================================================
 
                 consultas = SearchQueryBuilder.gerar(produto)
 
                 todos_videos = {}
 
+                total_resultados = 0
+
                 for consulta in consultas:
+
+                    builder.add_consulta(consulta)
 
                     print(f"Pesquisa: {consulta}")
 
@@ -117,7 +134,11 @@ class PromobitScraper:
                             maxResults=10
                         )
 
-                        print(f"   {len(resultados)} vídeos encontrados")
+                        total_resultados += len(resultados)
+
+                        print(
+                            f"   {len(resultados)} vídeos encontrados"
+                        )
 
                         for video in resultados:
 
@@ -137,21 +158,25 @@ class PromobitScraper:
                     f"Total de vídeos únicos: {len(todos_videos)}"
                 )
 
-                # -------------------------------------------------
-                # Ranking dos vídeos
-                # -------------------------------------------------
+                # =====================================================
+                # Ranking
+                # =====================================================
 
                 ranking = VideoRankingService.rank(
+
                     produto,
+
                     list(todos_videos.values()),
+
                     limite=10
+
                 )
 
                 print(f"Top {len(ranking)} vídeos:")
 
-                # -------------------------------------------------
-                # Salva os melhores vídeos
-                # -------------------------------------------------
+                # =====================================================
+                # Salva vídeos
+                # =====================================================
 
                 for dados_video in ranking:
 
@@ -164,6 +189,8 @@ class PromobitScraper:
 
                         repo_video.upsert(video)
 
+                        builder.add_video(video)
+
                         print(
                             f"[{video.score:.1f}] {video.titulo}"
                         )
@@ -175,7 +202,27 @@ class PromobitScraper:
                             e
                         )
 
-                produtos.append(produto)
+                # =====================================================
+                # Estatísticas do pipeline
+                # =====================================================
+
+                builder.pipeline(
+
+                    scraper="Promobit",
+
+                    consultas=len(consultas),
+
+                    videos_encontrados=total_resultados,
+
+                    videos_unicos=len(todos_videos),
+
+                    videos_salvos=len(ranking)
+
+                )
+
+                contexto = builder.build()
+
+                contextos.append(contexto)
 
             except Exception as e:
 
@@ -183,4 +230,4 @@ class PromobitScraper:
                     f"Erro ao processar {url}: {e}"
                 )
 
-        return produtos
+        return contextos
