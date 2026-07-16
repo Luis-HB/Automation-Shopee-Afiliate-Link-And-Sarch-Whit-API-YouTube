@@ -55,3 +55,31 @@ class ProdutoFactory:
             ativo=True
 
         )
+        
+    @staticmethod
+    def from_affiliate_api(data):
+
+        return Produto(
+
+        shopee_id=data["itemId"],
+
+        titulo=data["productName"],
+
+        preco=data["priceMin"],
+
+        preco_original=data["priceMax"],
+
+        desconto=data["priceDiscountRate"],
+
+        nota=data["ratingStar"],
+
+        vendas=data["sales"],
+
+        imagem_principal=data["imageUrl"],
+
+        url_produto=data["productLink"],
+
+        url_afiliado=data["offerLink"],
+
+        api_response=data
+    )

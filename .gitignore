@@ -1,1 +1,17 @@
+# Ignorar configurações locais e segredos
 .env
+
+# Caches do Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Pastas de ambiente virtual
+venv/
+.venv/
+env/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
