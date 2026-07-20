@@ -1,4 +1,4 @@
-from repositories.produto_repository import ProdutoRepository
+from python.app.repositories.product_repository import ProdutoRepository
 
 repo = ProdutoRepository()
 

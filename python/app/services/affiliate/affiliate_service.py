@@ -1,7 +1,7 @@
-from core.graphql_client import GraphQLClient
-from core.graphql_loader import GraphQLLoader
-
 from models.search_config import SearchConfig
+
+from core.clients.graphql_client import GraphQLClient
+from core.graphql.graphql_loader import GraphQLLoader
 
 
 class AffiliateService:
@@ -10,26 +10,11 @@ class AffiliateService:
 
         self.client = GraphQLClient()
 
-        self.product_offer_query = GraphQLLoader.load(
-            "product_offer.graphql"
-        )
+    def buscar_produtos(self, config: SearchConfig):
 
-        self.shop_offer_query = GraphQLLoader.load(
-            "shop_offer.graphql"
+        query = GraphQLLoader.load(
+            "queries/product_offer.graphql"
         )
-
-        self.short_link_query = GraphQLLoader.load(
-            "generate_short_link.graphql"
-        )
-
-        self.conversion_query = GraphQLLoader.load(
-            "conversion_report.graphql"
-        )
-
-    def buscar_produtos(
-        self,
-        config: SearchConfig
-    ):
 
         variables = {
             "keyword": config.keyword,
@@ -39,10 +24,10 @@ class AffiliateService:
             "sortType": config.sort_type,
         }
 
-        if config.shop_id is not None:
+        if config.shop_id:
             variables["shopId"] = config.shop_id
 
-        if config.item_id is not None:
+        if config.item_id:
             variables["itemId"] = config.item_id
 
         if config.is_key_seller:
@@ -55,7 +40,7 @@ class AffiliateService:
             variables["shopType"] = config.shop_types
 
         data = self.client.execute(
-            query=self.product_offer_query,
+            query=query,
             variables=variables,
             operation_name="ProductOffer"
         )

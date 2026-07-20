@@ -1,5 +1,5 @@
-from services.search_query_builder import SearchQueryBuilder
-from models.produto import Produto
+from python.app.services.search.search_query_builder import SearchQueryBuilder
+from python.app.models.product import Produto
 
 produto = Produto(
     titulo="Mouse Logitech G203 Lightsync RGB"

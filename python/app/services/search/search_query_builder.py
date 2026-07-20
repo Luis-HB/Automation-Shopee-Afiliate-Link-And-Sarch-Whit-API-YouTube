@@ -1,4 +1,4 @@
-from services.product_analyzer import ProductAnalyzer
+from python.app.services.product.product_analyzer import ProductAnalyzer
 
 
 class SearchQueryBuilder:

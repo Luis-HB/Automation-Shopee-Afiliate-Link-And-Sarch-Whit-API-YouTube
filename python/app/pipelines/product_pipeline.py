@@ -1,15 +1,13 @@
 import time
 
-from services.product_analyzer import ProductAnalyzer
-from services.search_query_builder import SearchQueryBuilder
-from services.video_discovery_service import VideoDiscoveryService
-from services.video_ranking_service import VideoRankingService
+from services.product.product_analyzer import ProductAnalyzer
+from services.search.search_query_builder import SearchQueryBuilder
+from services.video.video_discovery_service import VideoDiscoveryService
+from services.ranking.video_ranking_service import VideoRankingService
+from services.context.product_context_builder import ProductContextBuilder
 
 from repositories.video_repository import VideoRepository
-
 from factories.video_factory import VideoFactory
-
-from services.contexto_produto_builder import ContextoProdutoBuilder
 
 
 class ProductPipeline:
@@ -17,80 +15,64 @@ class ProductPipeline:
     def __init__(self):
 
         self.analyzer = ProductAnalyzer()
-
         self.discovery = VideoDiscoveryService()
-
         self.ranking = VideoRankingService()
-
         self.video_repo = VideoRepository()
 
-    def processar(self, produto):
+    def process(self, product):
 
-        inicio = time.perf_counter()
+        start = time.perf_counter()
 
         # -------------------------------------
-        # Análise do produto
+        # Product analysis
         # -------------------------------------
 
-        self.analyzer.analisar(produto)
+        self.analyzer.analyze(product)
 
-        contexto = (
-            ContextoProdutoBuilder()
-            .produto(produto)
+        context = (
+            ProductContextBuilder()
+            .product(product)
         )
 
         # -------------------------------------
-        # Geração das consultas
+        # Generate search queries
         # -------------------------------------
 
-        consultas = SearchQueryBuilder.gerar(produto)
+        queries = SearchQueryBuilder.generate(product)
 
-        for consulta in consultas:
+        for query in queries:
+            context.add_query(query)
 
-            contexto.add_consulta(consulta)
-
-        contexto.metadata(
-
-            origem="affiliate_api",
-
-            consultas_geradas=len(consultas),
-
-            estrategia_busca="multi_provider"
-
+        context.metadata(
+            source="affiliate_api",
+            queries_generated=len(queries),
+            search_strategy="multi_provider"
         )
 
         # -------------------------------------
-        # Descoberta de vídeos
+        # Video discovery
         # -------------------------------------
 
         try:
 
-            videos = self.discovery.buscar(
-                consultas
+            videos = self.discovery.search(
+                queries
             )
 
         except Exception as e:
 
-            contexto.metadata(
-
-                erro_video=str(e),
-
-                videos_encontrados=0,
-
-                videos_rankeados=0,
-
-                videos_salvos=0
-
+            context.metadata(
+                video_error=str(e),
+                videos_found=0,
+                videos_ranked=0,
+                videos_saved=0
             )
 
-            return contexto.build()
+            return context.build()
 
-        contexto.metadata(
-
-            videos_encontrados=len(videos),
-
-            provedores=self.discovery.providers_names()
-
+        context.metadata(
+            videos_found=len(videos),
+            providers=self.discovery.provider_names()
         )
 
         # -------------------------------------
@@ -102,71 +84,50 @@ class ProductPipeline:
         if videos:
 
             ranking = self.ranking.rank(
-
-                produto,
-
+                product,
                 videos,
-
-                limite=10
-
+                limit=10
             )
 
-        contexto.metadata(
-
-            videos_rankeados=len(ranking)
-
+        context.metadata(
+            videos_ranked=len(ranking)
         )
 
         # -------------------------------------
-        # Persistência
+        # Persistence
         # -------------------------------------
 
-        videos_salvos = 0
+        videos_saved = 0
 
-        for dados in ranking:
+        for data in ranking:
 
             try:
 
                 video = VideoFactory.from_dict(
-
-                    dados,
-
-                    produto.id
-
+                    data,
+                    product.id
                 )
 
                 self.video_repo.upsert(video)
 
-                contexto.add_video(video)
+                context.add_video(video)
 
-                videos_salvos += 1
+                videos_saved += 1
 
             except Exception as e:
 
-                print(
+                print(f"Error saving video: {e}")
 
-                    f"Erro ao salvar vídeo: {e}"
-
-                )
-
-        tempo = round(
-
-            time.perf_counter() - inicio,
-
+        elapsed = round(
+            time.perf_counter() - start,
             2
-
         )
 
-        contexto.metadata(
-
-            videos_salvos=videos_salvos,
-
-            tempo_processamento=tempo,
-
+        context.metadata(
+            videos_saved=videos_saved,
+            processing_time=elapsed,
             pipeline="affiliate",
-
-            versao="3.0"
-
+            version="3.0"
         )
 
-        return contexto.build()
+        return context.build()

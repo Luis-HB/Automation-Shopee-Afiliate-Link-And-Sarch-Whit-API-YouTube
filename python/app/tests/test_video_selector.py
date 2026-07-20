@@ -1,7 +1,7 @@
-from repositories.produto_repository import ProdutoRepository
+from python.app.repositories.product_repository import ProdutoRepository
 from repositories.video_repository import VideoRepository
 
-from services.video_selector import VideoSelector
+from python.app.services.ranking.video_selector import VideoSelector
 
 
 produto = ProdutoRepository().all()[0]

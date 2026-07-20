@@ -3,18 +3,18 @@ import requests
 
 from bs4 import BeautifulSoup
 
-from factories.produto_factory import ProdutoFactory
+from factories.product_factory import ProductFactory
 from factories.video_factory import VideoFactory
 
-from repositories.produto_repository import ProdutoRepository
+from repositories.product_repository import ProductRepository
 from repositories.video_repository import VideoRepository
 
-from services.youtube_service import YouTubeService
-from services.search_query_builder import SearchQueryBuilder
-from services.video_ranking_service import VideoRankingService
-from services.contexto_produto_builder import ContextoProdutoBuilder
+from services.video.youtube_service import YouTubeService
+from services.search.search_query_builder import SearchQueryBuilder
+from services.ranking.video_ranking_service import VideoRankingService
+from services.context.product_context_builder import ProductContextBuilder
 
-from scrapers.oferta_parser import OfertaParser
+from scrapers.offer import OfferParser
 from scrapers.redirect_parser import RedirectParser
 
 
@@ -23,7 +23,7 @@ class PromobitScraper:
     BASE_URL = "https://www.promobit.com.br"
     LIST_URL = BASE_URL + "/promocoes/loja/shopee/"
 
-    def listar_ofertas(self):
+    def list_offers(self):
 
         html = requests.get(self.LIST_URL).text
 
@@ -44,118 +44,118 @@ class PromobitScraper:
 
         return list(dict.fromkeys(links))
 
-    def detalhar_oferta(self, url):
+    def get_offer_details(self, url):
 
         html = requests.get(url).text
 
-        produto = OfertaParser.parse(html)
+        product = OfferParser.parse(html)
 
-        if produto.get("redirect"):
+        if product.get("redirect"):
 
-            produto["url_shopee"] = RedirectParser.get_shopee_link(
-                produto["redirect"]
+            product["url_shopee"] = RedirectParser.get_shopee_link(
+                product["redirect"]
             )
 
-        return produto
+        return product
 
-    def executar(self, limite=5):
+    def execute(self, limit=5):
 
-        contextos = []
+        contexts = []
 
-        ofertas = self.listar_ofertas()
+        offers = self.list_offers()
 
-        print(f"Foram encontradas {len(ofertas)} ofertas.")
+        print(f"{len(offers)} offers found.")
 
-        repo = ProdutoRepository()
-        repo_video = VideoRepository()
+        product_repo = ProductRepository()
+        video_repo = VideoRepository()
 
         youtube = YouTubeService(
             os.getenv("YOUTUBE_API_KEY")
         )
 
-        for url in ofertas[:limite]:
+        for url in offers[:limit]:
 
             print("=" * 80)
-            print("Lendo:", url)
+            print("Reading:", url)
 
             try:
 
-                dados = self.detalhar_oferta(url)
+                data = self.get_offer_details(url)
 
-                if dados["tipo"] == "CUPOM":
+                if data["tipo"] == "CUPOM":
 
-                    print(f"Ignorando cupom: {dados['titulo']}")
+                    print(f"Skipping coupon: {data['titulo']}")
                     continue
 
-                produto = ProdutoFactory.from_dict(dados)
+                product = ProductFactory.from_dict(data)
 
-                repo.upsert(produto)
+                product_repo.upsert(product)
 
-                print(f"✔ Produto salvo: {produto.titulo}")
+                print(f"✔ Product saved: {product.titulo}")
 
-                if not produto.id:
+                if not product.id:
 
-                    print("Produto salvo sem ID.")
+                    print("Product saved without ID.")
                     continue
 
                 # =====================================================
-                # Builder do contexto
+                # Context Builder
                 # =====================================================
 
-                builder = ContextoProdutoBuilder()
+                builder = ProductContextBuilder()
 
-                builder.produto(produto)
+                builder.product(product)
 
                 builder.metadata(
                     url_promobit=url,
-                    url_shopee=produto.url_shopee
+                    url_shopee=product.url_shopee
                 )
 
                 # =====================================================
-                # Busca vídeos
+                # Search videos
                 # =====================================================
 
-                consultas = SearchQueryBuilder.gerar(produto)
+                queries = SearchQueryBuilder.generate(product)
 
-                todos_videos = {}
+                all_videos = {}
 
-                total_resultados = 0
+                total_results = 0
 
-                for consulta in consultas:
+                for query in queries:
 
-                    builder.add_consulta(consulta)
+                    builder.add_query(query)
 
-                    print(f"Pesquisa: {consulta}")
+                    print(f"Searching: {query}")
 
                     try:
 
-                        resultados = youtube.buscar_shorts(
-                            consulta,
+                        results = youtube.search_shorts(
+                            query,
                             maxResults=10
                         )
 
-                        total_resultados += len(resultados)
+                        total_results += len(results)
 
                         print(
-                            f"   {len(resultados)} vídeos encontrados"
+                            f"   {len(results)} videos found"
                         )
 
-                        for video in resultados:
+                        for video in results:
 
                             video_id = video["video_id"]
 
-                            if video_id not in todos_videos:
+                            if video_id not in all_videos:
 
-                                todos_videos[video_id] = video
+                                all_videos[video_id] = video
 
                     except Exception as e:
 
                         print(
-                            f"Erro na pesquisa '{consulta}': {e}"
+                            f"Search error '{query}': {e}"
                         )
 
                 print(
-                    f"Total de vídeos únicos: {len(todos_videos)}"
+                    f"Unique videos: {len(all_videos)}"
                 )
 
                 # =====================================================
@@ -164,30 +164,30 @@ class PromobitScraper:
 
                 ranking = VideoRankingService.rank(
 
-                    produto,
+                    product,
 
-                    list(todos_videos.values()),
+                    list(all_videos.values()),
 
-                    limite=10
+                    limit=10
 
                 )
 
-                print(f"Top {len(ranking)} vídeos:")
+                print(f"Top {len(ranking)} videos:")
 
                 # =====================================================
-                # Salva vídeos
+                # Save videos
                 # =====================================================
 
-                for dados_video in ranking:
+                for video_data in ranking:
 
                     try:
 
                         video = VideoFactory.from_dict(
-                            dados_video,
-                            produto.id
+                            video_data,
+                            product.id
                         )
 
-                        repo_video.upsert(video)
+                        video_repo.upsert(video)
 
                         builder.add_video(video)
 
@@ -198,36 +198,35 @@ class PromobitScraper:
                     except Exception as e:
 
                         print(
-                            "Erro ao salvar vídeo:",
-                            e
+                            f"Error saving video: {e}"
                         )
 
                 # =====================================================
-                # Estatísticas do pipeline
+                # Pipeline metadata
                 # =====================================================
 
                 builder.pipeline(
 
                     scraper="Promobit",
 
-                    consultas=len(consultas),
+                    queries=len(queries),
 
-                    videos_encontrados=total_resultados,
+                    videos_found=total_results,
 
-                    videos_unicos=len(todos_videos),
+                    unique_videos=len(all_videos),
 
-                    videos_salvos=len(ranking)
+                    videos_saved=len(ranking)
 
                 )
 
-                contexto = builder.build()
+                context = builder.build()
 
-                contextos.append(contexto)
+                contexts.append(context)
 
             except Exception as e:
 
                 print(
-                    f"Erro ao processar {url}: {e}"
+                    f"Error processing {url}: {e}"
                 )
 
-        return contextos
+        return contexts

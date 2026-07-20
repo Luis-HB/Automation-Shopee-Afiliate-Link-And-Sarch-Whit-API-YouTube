@@ -1,4 +1,4 @@
-from services.score_service import ScoreService
+from services.ranking.score_service import ScoreService
 
 
 class VideoRankingService:

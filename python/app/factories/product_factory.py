@@ -1,11 +1,10 @@
 import hashlib
-
 from decimal import Decimal
 
-from models.produto import Produto
+from models.product import Product
 
 
-class ProdutoFactory:
+class ProductFactory:
 
     @staticmethod
     def from_dict(data):
@@ -16,13 +15,13 @@ class ProdutoFactory:
             or data.get("titulo", "")
         )
 
-        hash_produto = hashlib.sha256(
+        product_hash = hashlib.sha256(
             url.encode("utf-8")
         ).hexdigest()
 
-        return Produto(
+        return Product(
 
-            hash_produto=hash_produto,
+            hash_produto=product_hash,
 
             titulo=data.get("titulo", ""),
 
@@ -30,9 +29,13 @@ class ProdutoFactory:
 
             preco=Decimal(str(data.get("preco", 0))),
 
-            preco_original=Decimal(str(data.get("preco_original", 0))),
+            preco_original=Decimal(
+                str(data.get("preco_original", 0))
+            ),
 
-            desconto=Decimal(str(data.get("desconto", 0))),
+            desconto=Decimal(
+                str(data.get("desconto", 0))
+            ),
 
             nota=data.get("nota"),
 
@@ -48,38 +51,45 @@ class ProdutoFactory:
 
             url_afiliado=data.get("url_shopee", ""),
 
-            score=Decimal(str(data.get("score", 0))),
+            score=Decimal(
+                str(data.get("score", 0))
+            ),
 
             status="NOVO",
 
             ativo=True
 
         )
-        
+
     @staticmethod
     def from_affiliate_api(data):
 
-        return Produto(
+        return Product(
 
-        shopee_id=data["itemId"],
+            shopee_id=data["itemId"],
 
-        titulo=data["productName"],
+            titulo=data["productName"],
 
-        preco=data["priceMin"],
+            preco=Decimal(str(data["priceMin"])),
 
-        preco_original=data["priceMax"],
+            preco_original=Decimal(
+                str(data["priceMax"])
+            ),
 
-        desconto=data["priceDiscountRate"],
+            desconto=Decimal(
+                str(data["priceDiscountRate"])
+            ),
 
-        nota=data["ratingStar"],
+            nota=data["ratingStar"],
 
-        vendas=data["sales"],
+            vendas=data["sales"],
 
-        imagem_principal=data["imageUrl"],
+            imagem_principal=data["imageUrl"],
 
-        url_produto=data["productLink"],
+            url_produto=data["productLink"],
 
-        url_afiliado=data["offerLink"],
+            url_afiliado=data["offerLink"],
 
-        api_response=data
-    )
+            api_response=data
+
+        )

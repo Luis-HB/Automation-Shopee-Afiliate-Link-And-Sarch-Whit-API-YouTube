@@ -1,6 +1,10 @@
-from services.affiliate_service import AffiliateService
-from factories.produto_factory import ProdutoFactory
-from repositories.produto_repository import ProdutoRepository
+from services.affiliate.affiliate_service import AffiliateService
+
+from repositories.product_repository import ProductRepository
+
+from factories.product_factory import ProductFactory
+
+from pipelines.product_pipeline import ProductPipeline
 
 
 class ShopeeAffiliateScraper:
@@ -9,11 +13,11 @@ class ShopeeAffiliateScraper:
 
         self.api = AffiliateService()
 
-        self.repo = ProdutoRepository()
+        self.repo = ProductRepository()
 
         self.pipeline = ProductPipeline()
 
-    def executar(
+    def execute(
 
         self,
 
@@ -23,58 +27,60 @@ class ShopeeAffiliateScraper:
 
         sort_type=5,
 
-        limite=20,
+        limit=20,
 
-        page=1
+        page=1,
+
+        process_videos=True
 
     ):
 
-        produtos_api = self.api.buscar_produtos(
+        products_api = self.api.search_products(
 
             keyword=keyword,
 
-            listType=list_type,
+            list_type=list_type,
 
-            sortType=sort_type,
+            sort_type=sort_type,
 
             page=page,
 
-            limit=limite
+            limit=limit
 
         )
 
-        produtos = []
+        products = []
 
-        print(f"\n{len(produtos_api)} produtos encontrados.\n")
+        print(f"\n{len(products_api)} products found.\n")
 
-        for dados in produtos_api:
+        for data in products_api:
 
             try:
 
-                produto = ProdutoFactory.from_affiliate_api(
-                    dados
+                product = ProductFactory.from_affiliate_api(
+                    data
                 )
 
-                self.repo.upsert(produto)
+                self.repo.upsert(product)
 
-                print(f"✔ Produto salvo: {produto.titulo}")
+                print(f"✔ Product saved: {product.title}")
 
-                if processar_videos:
+                if process_videos:
 
-                    contexto = self.pipeline.processar(
-                        produto
+                    context = self.pipeline.process(
+                        product
                     )
 
                     print(
-                        f"   {len(contexto.videos)} vídeos encontrados."
+                        f"   {len(context.videos)} videos found."
                     )
 
-                produtos.append(produto)
+                products.append(product)
 
             except Exception as e:
 
                 print(
-                    f"Erro ao processar produto: {e}"
+                    f"Error processing product: {e}"
                 )
 
-        return produtos
+        return products

@@ -1,6 +1,6 @@
 from repositories.base_repository import Repository
 
-from models.produto import Produto
+from python.app.models.product import Produto
 
 
 class ProdutoRepository(Repository):

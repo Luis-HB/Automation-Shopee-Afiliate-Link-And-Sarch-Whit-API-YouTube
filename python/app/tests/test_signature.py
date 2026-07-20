@@ -1,6 +1,6 @@
 import json
 
-from core.shopee_auth import ShopeeAuth
+from python.app.core.auth.shopee_auth import ShopeeAuth
 
 body = {
 

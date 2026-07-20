@@ -9,10 +9,9 @@ class AffiliatePipeline:
     def __init__(self):
 
         self.scraper = ShopeeAffiliateScraper()
-
         self.pipeline = ProductPipeline()
 
-    def executar(
+    def execute(
 
         self,
 
@@ -22,33 +21,33 @@ class AffiliatePipeline:
 
         sort_type=5,
 
-        limite=20,
+        limit=20,
 
-        paginas=1
+        pages=1
 
     ):
 
-        inicio = time.perf_counter()
+        start = time.perf_counter()
 
-        contextos = []
+        contexts = []
 
-        estatisticas = {
+        statistics = {
 
-            "produtos_encontrados": 0,
+            "products_found": 0,
 
-            "produtos_processados": 0,
+            "products_processed": 0,
 
-            "produtos_falharam": 0,
+            "products_failed": 0,
 
-            "paginas": 0
+            "pages": 0
 
         }
 
-        pagina = 1
+        page = 1
 
-        while pagina <= paginas:
+        while page <= pages:
 
-            produtos = self.scraper.executar(
+            products = self.scraper.execute(
 
                 keyword=keyword,
 
@@ -56,41 +55,40 @@ class AffiliatePipeline:
 
                 sort_type=sort_type,
 
-                limite=limite,
+                limit=limit,
 
-                page=pagina
+                page=page
 
             )
 
-            if not produtos:
-
+            if not products:
                 break
 
-            estatisticas["paginas"] += 1
+            statistics["pages"] += 1
 
-            estatisticas["produtos_encontrados"] += len(produtos)
+            statistics["products_found"] += len(products)
 
-            for produto in produtos:
+            for product in products:
 
                 try:
 
-                    contexto = self.pipeline.processar(produto)
+                    context = self.pipeline.process(product)
 
-                    contextos.append(contexto)
+                    contexts.append(context)
 
-                    estatisticas["produtos_processados"] += 1
+                    statistics["products_processed"] += 1
 
                 except Exception as e:
 
                     print(e)
 
-                    estatisticas["produtos_falharam"] += 1
+                    statistics["products_failed"] += 1
 
-            pagina += 1
+            page += 1
 
-        estatisticas["tempo_total"] = round(
+        statistics["total_time"] = round(
 
-            time.perf_counter() - inicio,
+            time.perf_counter() - start,
 
             2
 
@@ -98,8 +96,8 @@ class AffiliatePipeline:
 
         return {
 
-            "estatisticas": estatisticas,
+            "statistics": statistics,
 
-            "contextos": contextos
+            "contexts": contexts
 
         }

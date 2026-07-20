@@ -1,5 +1,5 @@
 from repositories.repository import Repository
-from models.publicacao import Publicacao
+from python.app.models.publication import Publicacao
 
 
 class PublicacaoRepository(Repository):

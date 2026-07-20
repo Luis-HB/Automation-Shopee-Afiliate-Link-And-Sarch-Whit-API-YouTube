@@ -1,24 +1,25 @@
-from models.publicacao import Publicacao
+from models.publication import Publication
 
 
-class PublicacaoFactory:
+class PublicationFactory:
 
     @staticmethod
-    def from_dict(dados):
+    def from_dict(data):
 
-        return Publicacao(
+        return Publication(
 
-            produto_id=dados["produto_id"],
+            produto_id=data["produto_id"],
 
-            video_id=dados["video_id"],
+            video_id=data["video_id"],
 
-            score=dados.get("score", 0),
+            score=data.get("score", 0),
 
-            legenda=dados.get("legenda", ""),
+            legenda=data.get("legenda", ""),
 
-            hashtags=dados.get("hashtags", ""),
+            hashtags=data.get("hashtags", ""),
 
-            status=dados.get("status", "PENDENTE"),
+            status=data.get("status", "PENDENTE"),
 
-            data_agendada=dados.get("data_agendada")
+            data_agendada=data.get("data_agendada")
+
         )

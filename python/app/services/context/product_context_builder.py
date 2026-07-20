@@ -1,22 +1,21 @@
-from models.contexto_produto import ContextoProduto
+from models.product_context import ProductContext
 
 
-class ContextoProdutoBuilder:
+class ProductContextBuilder:
 
     def __init__(self):
-
-        self.contexto = ContextoProduto()
+        self.contexto = ProductContext()
 
     # ==========================================================
-    # Produto
+    # Product
     # ==========================================================
 
-    def produto(self, produto):
+    def product(self, product):
 
-        self.contexto.produto = produto.__dict__.copy()
+        self.contexto.produto = product.__dict__.copy()
 
         self.contexto.score_produto = getattr(
-            produto,
+            product,
             "score",
             0
         )
@@ -24,35 +23,30 @@ class ContextoProdutoBuilder:
         return self
 
     # ==========================================================
-    # Consultas
+    # Searches
     # ==========================================================
 
-    def add_consulta(self, consulta):
+    def add_query(self, query):
 
-        self.contexto.consultas.append(consulta)
+        self.contexto.consultas.append(query)
 
         return self
 
-    def add_consultas(self, consultas):
+    def add_queries(self, queries):
 
-        self.contexto.consultas.extend(consultas)
+        self.contexto.consultas.extend(queries)
 
         return self
 
     # ==========================================================
-    # Vídeos
+    # Videos
     # ==========================================================
 
     def add_video(self, video):
 
         if hasattr(video, "__dict__"):
-
-            self.contexto.videos.append(
-                video.__dict__.copy()
-            )
-
+            self.contexto.videos.append(video.__dict__.copy())
         else:
-
             self.contexto.videos.append(video)
 
         return self
@@ -60,7 +54,6 @@ class ContextoProdutoBuilder:
     def add_videos(self, videos):
 
         for video in videos:
-
             self.add_video(video)
 
         return self
@@ -86,36 +79,34 @@ class ContextoProdutoBuilder:
         return self
 
     # ==========================================================
-    # IA
+    # AI
     # ==========================================================
 
-    def ia(self, **kwargs):
+    def ai(self, **kwargs):
 
         self.contexto.ia.update(kwargs)
 
         return self
 
     # ==========================================================
-    # Publicação
+    # Publication
     # ==========================================================
 
-    def publicacao(self, **kwargs):
+    def publication(self, **kwargs):
 
         self.contexto.publicacao.update(kwargs)
 
         return self
 
     # ==========================================================
-    # Erros
+    # Errors
     # ==========================================================
 
-    def erro(self, mensagem):
+    def error(self, message):
 
-        if "erros" not in self.contexto.metadata:
+        self.contexto.metadata.setdefault("errors", [])
 
-            self.contexto.metadata["erros"] = []
-
-        self.contexto.metadata["erros"].append(mensagem)
+        self.contexto.metadata["errors"].append(message)
 
         return self
 
@@ -126,7 +117,7 @@ class ContextoProdutoBuilder:
     def build(self):
 
         self.contexto.metadata.setdefault(
-            "total_consultas",
+            "total_queries",
             len(self.contexto.consultas)
         )
 
@@ -135,26 +126,14 @@ class ContextoProdutoBuilder:
             len(self.contexto.videos)
         )
 
-        if self.contexto.videos:
-
-            maior_score = max(
-
-                video.get("score", 0)
-
-                for video in self.contexto.videos
-
-            )
-
-        else:
-
-            maior_score = 0
+        highest_score = max(
+            (video.get("score", 0) for video in self.contexto.videos),
+            default=0
+        )
 
         self.contexto.metadata.setdefault(
-
-            "melhor_score_video",
-
-            maior_score
-
+            "best_video_score",
+            highest_score
         )
 
         return self.contexto

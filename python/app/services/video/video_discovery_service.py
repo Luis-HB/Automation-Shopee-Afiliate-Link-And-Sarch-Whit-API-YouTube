@@ -1,5 +1,6 @@
 from providers.youtube_provider import YoutubeProvider
 from providers.shopee_video_provider import ShopeeVideoProvider
+from python.app.services.video.youtube_service import YouTubeService
 
 
 class VideoDiscoveryService:
