@@ -1,16 +1,14 @@
+from core.clients.graphql_client import GraphQLClient
+
+
 class ShopeeProductService:
 
     def __init__(self):
-        self.client = ShopeeClient()
+
+        self.client = GraphQLClient()
 
     def get_item(self, item_id):
 
-        return self.client.get(
+        # Implementaremos depois
 
-            "/api/v2/product/get_item_base_info",
-
-            {
-                "item_id_list": [item_id]
-            }
-
-        )
+        raise NotImplementedError

@@ -1,4 +1,4 @@
-from python.app.services.product.product_analyzer import ProductAnalyzer
+from services.product.product_analyzer import ProductAnalyzer
 
 
 class SearchQueryBuilder:
@@ -27,12 +27,14 @@ class SearchQueryBuilder:
 
         base.extend(dados["extras"])
 
-        texto_base = " ".join(base)
+        texto_base = " ".join(base).strip()
 
-        consultas = []
+        if not texto_base:
+            texto_base = produto.titulo
 
-        for sufixo in SearchQueryBuilder.SUFIXOS:
-            consultas.append(f"{texto_base} {sufixo}")
-
-        # Remove duplicadas preservando a ordem
+        consultas = [
+            f"{texto_base} {sufixo}"
+            for sufixo in SearchQueryBuilder.SUFIXOS
+        ]
+        #Remove duplicates while preserving order
         return list(dict.fromkeys(consultas))

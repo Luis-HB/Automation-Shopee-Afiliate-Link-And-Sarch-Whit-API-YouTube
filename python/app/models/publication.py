@@ -3,12 +3,13 @@ from datetime import datetime
 
 
 @dataclass
-class Publicacao:
+class Publication:
 
     id: int | None = None
 
-    produto_id: int = None
-    video_id: int = None
+    produto_id: int | None = None
+
+    video_id: int | None = None
 
     status: str = "PENDENTE"
 
@@ -23,4 +24,5 @@ class Publicacao:
     publicado_em: datetime | None = None
 
     created_at: datetime | None = None
+
     updated_at: datetime | None = None

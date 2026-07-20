@@ -117,7 +117,10 @@ class Repository:
 
         data = obj.__dict__.copy()
 
-        obj_id = data.pop("id")
+        obj_id = data.pop("id", None)
+
+        if obj_id is None:
+            raise ValueError("Objeto sem ID.")
 
         columns = list(data.keys())
 

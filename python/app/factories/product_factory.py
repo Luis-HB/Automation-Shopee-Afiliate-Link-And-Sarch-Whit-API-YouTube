@@ -15,13 +15,13 @@ class ProductFactory:
             or data.get("titulo", "")
         )
 
-        product_hash = hashlib.sha256(
+        hash_produto = hashlib.sha256(
             url.encode("utf-8")
         ).hexdigest()
 
         return Product(
 
-            hash_produto=product_hash,
+            hash_produto=hash_produto,
 
             titulo=data.get("titulo", ""),
 
@@ -51,9 +51,7 @@ class ProductFactory:
 
             url_afiliado=data.get("url_shopee", ""),
 
-            score=Decimal(
-                str(data.get("score", 0))
-            ),
+            score=Decimal(str(data.get("score", 0))),
 
             status="NOVO",
 
@@ -72,15 +70,11 @@ class ProductFactory:
 
             preco=Decimal(str(data["priceMin"])),
 
-            preco_original=Decimal(
-                str(data["priceMax"])
-            ),
+            preco_original=Decimal(str(data["priceMax"])),
 
-            desconto=Decimal(
-                str(data["priceDiscountRate"])
-            ),
+            desconto=Decimal(str(data["priceDiscountRate"])),
 
-            nota=data["ratingStar"],
+            nota=Decimal(str(data["ratingStar"])),
 
             vendas=data["sales"],
 

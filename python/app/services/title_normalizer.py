@@ -44,6 +44,9 @@ class TitleNormalizer:
 
     @staticmethod
     def normalizar(texto):
+        
+        if not texto:
+            return []
 
         texto = texto.lower()
 

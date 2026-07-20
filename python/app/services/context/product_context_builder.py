@@ -1,4 +1,4 @@
-from models.product_context import ProductContext
+from models.product_context import ContextoProduto
 
 
 class ProductContextBuilder:

@@ -1,4 +1,5 @@
 from core.database import get_connection
+from models.video import Video
 
 
 class VideoRepository:
@@ -43,7 +44,6 @@ class VideoRepository:
                     duracao = EXCLUDED.duracao,
                     score = EXCLUDED.score,
                     updated_at = NOW();
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 """,
                 (
                     video.produto_id,

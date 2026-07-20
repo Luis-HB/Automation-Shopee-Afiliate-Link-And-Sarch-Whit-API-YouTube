@@ -7,11 +7,8 @@ class VideoSelector:
             return None
 
         videos.sort(
-
-            key=lambda v: v.score,
-
+            key=lambda v: getattr(v, "score", 0),
             reverse=True
-
         )
 
         return videos[0]

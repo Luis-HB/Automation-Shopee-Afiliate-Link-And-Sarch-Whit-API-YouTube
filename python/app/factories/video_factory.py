@@ -8,9 +8,15 @@ class VideoFactory:
     @staticmethod
     def from_dict(data, product):
 
+        product_id = (
+            product.id
+            if hasattr(product, "id")
+            else product
+        )
+
         video = Video(
 
-            produto_id=product.id,
+            produto_id=product_id,
 
             youtube_id=data["video_id"],
 
@@ -32,12 +38,11 @@ class VideoFactory:
 
         )
 
-        video.score = ScoreService.calculate(
+        if hasattr(product, "id"):
 
-            video,
-
-            product
-
-        )
+            video.score = ScoreService.calcular(
+                product,
+                video
+            )
 
         return video

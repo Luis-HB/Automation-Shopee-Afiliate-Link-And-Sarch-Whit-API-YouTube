@@ -1,13 +1,13 @@
 import hashlib
 
-from python.app.repositories.product_repository import ProdutoRepository
+from repositories.product_repository import ProductRepository
 
 
-class ProdutoService:
+class ProductService:
 
     def __init__(self):
 
-        self.repo = ProdutoRepository()
+        self.repo = ProductRepository()
 
     def gerar_hash(self, produto):
 

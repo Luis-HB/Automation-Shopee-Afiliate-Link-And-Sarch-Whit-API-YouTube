@@ -3,14 +3,9 @@ from providers.base_video_provider import BaseVideoProvider
 
 class ShopeeVideoProvider(BaseVideoProvider):
 
-    def buscar(
-        self,
-        consultas
-    ):
+    def search(self, queries):
 
-        #
-        # Implementaremos utilizando
-        # a Shopee Video API
-        #
+        # Futuramente:
+        # Shopee Video API
 
         return []

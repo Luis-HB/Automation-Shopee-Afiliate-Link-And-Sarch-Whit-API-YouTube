@@ -1,5 +1,6 @@
 import math
 import re
+from python.app.models import video
 from services.title_normalizer import TitleNormalizer
 
 class ScoreService:
@@ -69,7 +70,7 @@ class ScoreService:
     @staticmethod
     def score_views(video):
 
-        views = video["views"]
+        views = video.get("views", 0)
 
         if views >= 1000000:
             return 40
@@ -91,7 +92,7 @@ class ScoreService:
     @staticmethod
     def score_likes(video):
 
-        likes = video["likes"]
+        likes = video.get("likes", 0)
 
         if likes >= 100000:
             return 20
@@ -111,7 +112,7 @@ class ScoreService:
     @staticmethod
     def score_duracao(video):
 
-        segundos = video["duracao"]
+        segundos = video.get("duracao", 0)
 
         if segundos <= 20:
             return 10
@@ -130,9 +131,8 @@ class ScoreService:
         score = 0
 
         # usa log para evitar que vídeos gigantes dominem tudo
-        score += math.log10(video.views + 1) * 20
-
-        score += math.log10(video.likes + 1) * 15
+        score += math.log10(video.get("views", 0) + 1) * 20
+        score += math.log10(video.get("likes", 0) + 1) * 15
 
         return score
 
@@ -170,23 +170,19 @@ class ScoreService:
 
         score = 0
 
-        if video.duracao <= 30:
+        duracao = video.get("duracao", 0)
 
+        if duracao <= 30:
             score += 20
 
-        elif video.duracao <= 60:
-
+        elif duracao <= 60:
             score += 15
 
-        elif video.duracao <= 90:
-
+        elif duracao <= 90:
             score += 10
 
-        elif video.duracao <= 180:
-
+        elif duracao <= 180:
             score += 5
-
-        return score
 
     # --------------------------------------
 
@@ -195,7 +191,7 @@ class ScoreService:
 
         score = 0
 
-        titulo = video.titulo.lower()
+        titulo = video.get("titulo", "").lower()
 
         bonus = {
 

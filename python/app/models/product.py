@@ -3,47 +3,49 @@ from decimal import Decimal
 from typing import Optional
 from datetime import datetime
 
+
 @dataclass
-class Produto:
+class Product:
 
-    id: Optional[int]=None
-    descoberta_id: Optional[int]=None
+    id: Optional[int] = None
 
-    shopee_id: Optional[str]=None
+    descoberta_id: Optional[int] = None
 
-    hash_produto: str=""
+    shopee_id: Optional[str] = None
 
-    titulo: str=""
+    hash_produto: str = ""
 
-    descricao: Optional[str]=None
+    titulo: str = ""
 
-    categoria_id: Optional[int]=None
+    descricao: Optional[str] = None
 
-    preco: Optional[Decimal]=None
+    categoria_id: Optional[int] = None
 
-    preco_original: Optional[Decimal]=None
+    preco: Optional[Decimal] = None
 
-    desconto: Optional[Decimal]=None
+    preco_original: Optional[Decimal] = None
 
-    nota: Optional[Decimal]=None
+    desconto: Optional[Decimal] = None
 
-    avaliacoes: Optional[int]=None
+    nota: Optional[Decimal] = None
 
-    vendas: Optional[int]=None
+    avaliacoes: Optional[int] = None
 
-    estoque: Optional[int]=None
+    vendas: Optional[int] = None
 
-    imagem_principal: str=""
+    estoque: Optional[int] = None
 
-    url_produto: str=""
+    imagem_principal: str = ""
 
-    url_afiliado: str=""
+    url_produto: str = ""
 
-    score: Decimal=Decimal("0")
+    url_afiliado: str = ""
 
-    status: str="NOVO"
+    score: Decimal = Decimal("0")
 
-    ativo: bool=True
+    status: str = "NOVO"
+
+    ativo: bool = True
 
     ultima_verificacao: Optional[datetime] = None
 
@@ -55,10 +57,13 @@ class Produto:
 
     @classmethod
     def from_dict(cls, data):
+
         obj = cls()
 
-        for field in cls.__dataclass_fields__.keys():
+        for field in cls.__dataclass_fields__:
+
             if field in data:
+
                 setattr(obj, field, data[field])
 
         return obj

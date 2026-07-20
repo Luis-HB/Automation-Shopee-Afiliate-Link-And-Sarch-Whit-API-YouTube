@@ -2,7 +2,7 @@ from dataclasses import dataclass, field, asdict
 
 
 @dataclass
-class ContextoProduto:
+class ProductContext:
 
     produto: dict = field(default_factory=dict)
 

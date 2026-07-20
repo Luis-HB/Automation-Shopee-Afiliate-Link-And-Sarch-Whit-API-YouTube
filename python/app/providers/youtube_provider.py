@@ -1,4 +1,4 @@
-from python.app.services.video.youtube_service import YouTubeService
+from services.video.youtube_service import YouTubeService
 
 from providers.base_video_provider import BaseVideoProvider
 
@@ -9,24 +9,18 @@ class YoutubeProvider(BaseVideoProvider):
 
         self.youtube = YouTubeService()
 
-    def buscar(
-        self,
-        consultas
-    ):
+    def search(self, queries):
 
         videos = {}
 
-        for consulta in consultas:
+        for query in queries:
 
             encontrados = self.youtube.buscar_shorts(
-                consulta,
+                query,
                 maxResults=10
             )
 
             for video in encontrados:
-
-                videos[
-                    video["video_id"]
-                ] = video
+                videos[video["video_id"]] = video
 
         return list(videos.values())

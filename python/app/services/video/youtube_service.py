@@ -1,5 +1,6 @@
 import re
 import requests
+from core.config.settings import YOUTUBE_API_KEY
 
 
 class YouTubeService:
@@ -7,8 +8,12 @@ class YouTubeService:
     SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
     VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
 
-    def __init__(self, api_key):
-        self.api_key = api_key
+    def __init__(self, api_key=None):
+
+        self.api_key = api_key or YOUTUBE_API_KEY
+        
+        if not self.api_key:
+            raise ValueError("YOUTUBE_API_KEY não configurada.")
 
     def buscar(self, termo, maxResults=20):
 
@@ -23,7 +28,11 @@ class YouTubeService:
             "order": "relevance"
         }
 
-        response = requests.get(self.SEARCH_URL, params=params)
+        response = requests.get(
+            self.SEARCH_URL,
+            params=params,
+            timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -36,7 +45,11 @@ class YouTubeService:
             "id": ",".join(video_ids)
         }
 
-        response = requests.get(self.VIDEOS_URL, params=params)
+        response = requests.get(
+            self.VIDEOS_URL,
+            params=params,
+            timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -67,14 +80,18 @@ class YouTubeService:
 
         video_ids = [
             item["id"]["videoId"]
-            for item in busca["items"]
+            for item in busca.get("items", [])
+            if item.get("id", {}).get("videoId")
         ]
+
+        if not video_ids:
+            return []
 
         detalhes = self.buscar_detalhes(video_ids)
 
         videos = []
 
-        for item in detalhes["items"]:
+        for item in detalhes.get("items", []):
 
             segundos = self.iso8601_to_seconds(
                 item["contentDetails"]["duration"]
@@ -105,6 +122,7 @@ class YouTubeService:
 
         return videos
     
+    @staticmethod
     def filtrar_produto(videos, termo):
         palavras = [
             p.lower()

@@ -11,7 +11,7 @@ class VideoRankingService:
         # Remove vídeos duplicados
         for video in videos:
 
-            video_id = video["video_id"]
+            video_id = video.get("video_id")
 
             if video_id not in unicos:
 

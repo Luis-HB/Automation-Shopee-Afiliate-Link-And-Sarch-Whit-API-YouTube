@@ -1,12 +1,8 @@
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 
 class BaseVideoProvider(ABC):
 
     @abstractmethod
-    def buscar(
-        self,
-        consultas
-    ):
+    def search(self, queries):
         pass

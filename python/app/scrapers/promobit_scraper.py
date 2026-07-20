@@ -69,9 +69,7 @@ class PromobitScraper:
         product_repo = ProductRepository()
         video_repo = VideoRepository()
 
-        youtube = YouTubeService(
-            os.getenv("YOUTUBE_API_KEY")
-        )
+        youtube = YouTubeService()
 
         for url in offers[:limit]:
 

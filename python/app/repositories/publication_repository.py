@@ -1,12 +1,12 @@
-from repositories.repository import Repository
-from python.app.models.publication import Publicacao
+from repositories.base_repository import Repository
+from models.publication import Publication
 
 
-class PublicacaoRepository(Repository):
+class PublicationRepository(Repository):
 
     def __init__(self):
 
         super().__init__(
             "publicacoes",
-            Publicacao
+            Publication
         )

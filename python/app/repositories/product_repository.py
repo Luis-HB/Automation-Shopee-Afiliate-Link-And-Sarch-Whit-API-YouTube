@@ -1,16 +1,12 @@
 from repositories.base_repository import Repository
+from models.product import Product
 
-from python.app.models.product import Produto
 
-
-class ProdutoRepository(Repository):
+class ProductRepository(Repository):
 
     def __init__(self):
 
         super().__init__(
-
             "produtos",
-
-            Produto
-
+            Product
         )
