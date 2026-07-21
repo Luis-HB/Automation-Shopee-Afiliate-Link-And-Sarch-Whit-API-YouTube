@@ -4,21 +4,25 @@ from core.database import get_connection
 def run():
 
     conn = get_connection()
-
     cur = conn.cursor()
 
-    cur.execute("""
+    try:
 
-    DROP SCHEMA public CASCADE;
+        cur.execute("""
+            DROP SCHEMA public CASCADE;
+            CREATE SCHEMA public;
+        """)
 
-    CREATE SCHEMA public;
+        conn.commit()
 
-    """)
+        print("Banco resetado.")
 
-    conn.commit()
+    except Exception:
 
-    print("Banco resetado.")
+        conn.rollback()
+        raise
 
-    cur.close()
+    finally:
 
-    conn.close()
+        cur.close()
+        conn.close()

@@ -1,6 +1,6 @@
 import requests
 
-from python.app.scrapers.offer import OfertaParser
+from scrapers.offer import OfertaParser
 from scrapers.redirect_parser import RedirectParser
 
 URL = "https://www.promobit.com.br/oferta/kit-acessorios-banheiro-inox-quadrado-4-pecas-2916416/"

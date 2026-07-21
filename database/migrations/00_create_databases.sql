@@ -1,1 +1,0 @@
-CREATE DATABASE n8n_database;

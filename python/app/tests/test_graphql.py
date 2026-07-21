@@ -1,4 +1,4 @@
-from python.app.services.affiliate.affiliate_service import AffiliateService
+from services.affiliate.affiliate_service import AffiliateService
 
 api = AffiliateService()
 

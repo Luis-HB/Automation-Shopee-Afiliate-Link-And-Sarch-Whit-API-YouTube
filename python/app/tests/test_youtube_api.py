@@ -1,4 +1,4 @@
-from python.app.services.video.youtube_service import YouTubeService
+from services.video.youtube_service import YouTubeService
 
 yt = YouTubeService("AIzaSyBIO9cao_eIzwqJmpwnWtROwEgtgelaJeg")
 

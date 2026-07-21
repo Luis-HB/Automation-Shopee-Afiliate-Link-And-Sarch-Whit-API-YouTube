@@ -24,7 +24,6 @@ class PromobitCrawler:
             if "/oferta/" in href:
 
                 if href.startswith("/"):
-
                     href = "https://www.promobit.com.br" + href
 
                 links.append(href)

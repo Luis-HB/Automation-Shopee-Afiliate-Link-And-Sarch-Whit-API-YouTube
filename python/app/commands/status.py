@@ -1,33 +1,37 @@
+from psycopg2.errors import UndefinedTable
 from core.database import get_connection
 
 
 def run():
 
     conn = get_connection()
-
     cur = conn.cursor()
 
-    cur.execute("""
-        SELECT migration,
-               executed_at
-        FROM schema_migrations
-        ORDER BY id;
-    """)
+    try:
 
-    rows = cur.fetchall()
+        cur.execute("""
+            SELECT migration,
+                   executed_at
+            FROM schema_migrations
+            ORDER BY id;
+        """)
 
-    print()
+        rows = cur.fetchall()
 
-    print("===== MIGRATIONS =====")
+    except UndefinedTable:
+
+        print("\nNenhuma migration executada.\n")
+        return
+
+    print("\n===== MIGRATIONS =====")
 
     if not rows:
         print("Nenhuma migration executada.")
 
     for row in rows:
-        print(f"{row[0]}  -> {row[1]}")
+        print(f"{row['migration']} -> {row['executed_at']}")
 
     print()
 
     cur.close()
-
     conn.close()

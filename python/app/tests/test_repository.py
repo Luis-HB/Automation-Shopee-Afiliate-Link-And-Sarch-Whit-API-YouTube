@@ -1,7 +1,7 @@
 from decimal import Decimal
 import uuid
-from python.app.repositories.product_repository import ProdutoRepository
-from python.app.models.product import Produto
+from repositories.product_repository import ProductRepository
+from models.product import Product
 
 
 
@@ -10,7 +10,7 @@ def linha():
     print("=" * 60)
 
 
-repo = ProdutoRepository()
+repo = ProductRepository()
 
 linha()
 print("1 - INSERINDO PRODUTO")
@@ -18,7 +18,7 @@ linha()
 
 hash_produto = str(uuid.uuid4())
 
-produto = Produto(
+produto = Product(
     titulo="Mouse Gamer Logitech G203",
     preco=Decimal("99.90"),
     preco_original=Decimal("149.90"),

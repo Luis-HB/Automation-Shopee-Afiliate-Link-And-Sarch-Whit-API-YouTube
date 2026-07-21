@@ -3,6 +3,8 @@ import sys
 from commands import migrate
 from commands import status
 from commands import reset
+from commands import rollback
+from commands import seed
 
 
 COMMANDS = {
@@ -12,6 +14,10 @@ COMMANDS = {
     "status": status.run,
 
     "reset": reset.run,
+
+    "rollback": rollback.run,
+
+    "seed": seed.run,
 
 }
 
@@ -30,6 +36,10 @@ python manage.py status
 
 python manage.py reset
 
+python manage.py rollback
+
+python manage.py seed
+
         """)
 
         return
@@ -38,9 +48,9 @@ python manage.py reset
 
     func = COMMANDS.get(command)
 
-    if not func:
+    if func is None:
 
-        print("Comando inexistente.")
+        print(f"Comando '{command}' inexistente.")
 
         return
 

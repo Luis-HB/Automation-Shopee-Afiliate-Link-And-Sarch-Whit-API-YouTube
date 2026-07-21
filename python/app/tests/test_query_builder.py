@@ -1,6 +1,6 @@
-from python.app.repositories.product_repository import ProdutoRepository
+from repositories.product_repository import ProductRepository
 
-repo = ProdutoRepository()
+repo = ProductRepository()
 
 print("\nProdutos NOVOS:\n")
 

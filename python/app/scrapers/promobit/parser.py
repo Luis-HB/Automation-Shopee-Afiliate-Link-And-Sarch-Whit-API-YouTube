@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 
 class PromobitParser:
 
-    def parse(self, html):
+    @staticmethod
+    def parse(html):
 
         soup = BeautifulSoup(html, "lxml")
 
