@@ -52,9 +52,11 @@ class PromobitScraper:
 
         if product.get("redirect"):
 
-            product["url_shopee"] = RedirectParser.get_shopee_link(
+            shopee_link = RedirectParser.get_shopee_link(
                 product["redirect"]
             )
+            product["shopee_url"] = shopee_link
+            product["url_shopee"] = shopee_link
 
         return product
 
@@ -80,9 +82,13 @@ class PromobitScraper:
 
                 data = self.get_offer_details(url)
 
-                if data["tipo"] == "CUPOM":
+                # Suporta tanto 'type' quanto 'tipo'
+                item_type = data.get("type") or data.get("tipo")
+                item_title = data.get("title") or data.get("titulo")
 
-                    print(f"Skipping coupon: {data['titulo']}")
+                if item_type == "COUPON":
+
+                    print(f"Skipping coupon: {item_title}")
                     continue
 
                 product = ProductFactory.from_dict(data)
@@ -106,15 +112,15 @@ class PromobitScraper:
 
                 builder.metadata(
                     url_promobit=url,
-                    url_shopee=product.url_shopee
+                    url_shopee=product.url_afiliado
                 )
 
                 # =====================================================
                 # Search videos
                 # =====================================================
 
-                queries = SearchQueryBuilder.generate(product)
-
+                queries = SearchQueryBuilder.gerar(product)
+                
                 all_videos = {}
 
                 total_results = 0
@@ -190,7 +196,7 @@ class PromobitScraper:
                         builder.add_video(video)
 
                         print(
-                            f"[{video.score:.1f}] {video.titulo}"
+                            f"[{video.score:.1f}] {getattr(video, 'title', getattr(video, 'titulo', ''))}"
                         )
 
                     except Exception as e:

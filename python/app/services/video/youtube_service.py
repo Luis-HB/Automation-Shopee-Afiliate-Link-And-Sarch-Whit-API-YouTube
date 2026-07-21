@@ -121,7 +121,7 @@ class YouTubeService:
         )
 
         return videos
-    
+
     @staticmethod
     def filtrar_produto(videos, termo):
         palavras = [
@@ -140,3 +140,10 @@ class YouTubeService:
                 resultado.append(video)
 
         return resultado
+
+    # Aliases de compatibilidade para chamadas em inglês
+    def search_shorts(self, query, max_results=20, **kwargs):
+        return self.buscar_shorts(termo=query, maxResults=max_results)
+
+    def search(self, query, max_results=20, **kwargs):
+        return self.buscar(termo=query, maxResults=max_results)

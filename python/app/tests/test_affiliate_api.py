@@ -1,23 +1,19 @@
 from services.affiliate.affiliate_service import AffiliateService
+from models.search_config import SearchConfig
 
 api = AffiliateService()
 
-produtos = api.buscar_produtos(
-
-    keyword="Mouse Logitech G203",
-
-    limit=5
-
+config = SearchConfig(
+    keyword="mouse gamer",
+    page=1,
+    limit=10,
+    list_type=2,
+    sort_type=5
 )
 
-for produto in produtos:
+produtos = api.buscar_produtos(config)
 
-    print("-" * 80)
+print(f"{len(produtos)} produtos encontrados")
 
+for produto in produtos[:5]:
     print(produto["productName"])
-
-    print(produto["commissionRate"])
-
-    print(produto["priceMin"])
-
-    print(produto["sales"])

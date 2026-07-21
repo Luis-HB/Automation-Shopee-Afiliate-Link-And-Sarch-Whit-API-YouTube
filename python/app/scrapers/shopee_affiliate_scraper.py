@@ -1,3 +1,5 @@
+from models.search_config import SearchConfig
+
 from services.affiliate.affiliate_service import AffiliateService
 
 from repositories.product_repository import ProductRepository
@@ -17,7 +19,7 @@ class ShopeeAffiliateScraper:
 
         self.pipeline = ProductPipeline()
 
-    def execute(
+    def executar(
 
         self,
 
@@ -27,60 +29,56 @@ class ShopeeAffiliateScraper:
 
         sort_type=5,
 
-        limit=20,
+        limite=20,
 
         page=1,
 
-        process_videos=True
+        processar_videos=True
 
     ):
 
-        products_api = self.api.search_products(
+        config = SearchConfig(
 
             keyword=keyword,
 
-            list_type=list_type,
-
-            sort_type=sort_type,
-
             page=page,
 
-            limit=limit
+            limit=limite,
+
+            list_type=list_type,
+
+            sort_type=sort_type
 
         )
 
-        products = []
+        produtos_api = self.api.buscar_produtos(config)
 
-        print(f"\n{len(products_api)} products found.\n")
+        produtos = []
 
-        for data in products_api:
+        print(f"\n{len(produtos_api)} produtos encontrados.\n")
+
+        for dados in produtos_api:
 
             try:
 
-                product = ProductFactory.from_affiliate_api(
-                    data
-                )
+                produto = ProductFactory.from_affiliate_api(dados)
 
-                self.repo.upsert(product)
+                self.repo.upsert(produto)
 
-                print(f"✔ Product saved: {product.title}")
+                print(f"✔ Produto salvo: {produto.titulo}")
 
-                if process_videos:
+                if processar_videos:
 
-                    context = self.pipeline.process(
-                        product
-                    )
+                    contexto = self.pipeline.processar(produto)
 
                     print(
-                        f"   {len(context.videos)} videos found."
+                        f"   {len(contexto.videos)} vídeos encontrados."
                     )
 
-                products.append(product)
+                produtos.append(produto)
 
             except Exception as e:
 
-                print(
-                    f"Error processing product: {e}"
-                )
+                print(f"Erro ao processar produto: {e}")
 
-        return products
+        return produtos

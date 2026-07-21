@@ -42,8 +42,7 @@ class VideoRepository:
                     views = EXCLUDED.views,
                     likes = EXCLUDED.likes,
                     duracao = EXCLUDED.duracao,
-                    score = EXCLUDED.score,
-                    updated_at = NOW();
+                    score = EXCLUDED.score;
                 """,
                 (
                     video.produto_id,
@@ -68,29 +67,22 @@ class VideoRepository:
     def close(self):
         self.cur.close()
         self.conn.close()
-        
+
     def find_by_produto(self, produto_id):
 
         conn = get_connection()
-
         cur = conn.cursor()
 
         cur.execute("""
-
             SELECT *
-
             FROM videos_produto
-
             WHERE produto_id=%s
-
             ORDER BY score DESC
-
         """, (produto_id,))
 
         rows = cur.fetchall()
 
         cur.close()
-
         conn.close()
 
         return [Video.from_dict(row) for row in rows]

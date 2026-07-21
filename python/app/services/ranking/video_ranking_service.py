@@ -4,7 +4,11 @@ from services.ranking.score_service import ScoreService
 class VideoRankingService:
 
     @staticmethod
-    def rank(produto, videos, limite=10):
+    def rank(produto, videos, limite=10, limit=None):
+
+        # Se 'limit' em inglês for passado, usa ele
+        if limit is not None:
+            limite = limit
 
         unicos = {}
 

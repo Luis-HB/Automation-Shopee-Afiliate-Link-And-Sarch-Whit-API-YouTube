@@ -1,43 +1,43 @@
 from bs4 import BeautifulSoup
 
 
-class OfertaParser:
+class OfferParser:
 
     @staticmethod
     def parse(html):
 
         soup = BeautifulSoup(html, "html.parser")
 
-        produto = {}
+        product = {}
 
-        # Título
+        # Title
         meta = soup.find("meta", property="og:title")
-        produto["titulo"] = meta["content"].strip() if meta else ""
+        product["title"] = meta["content"].strip() if meta else ""
 
-        # Descrição
+        # Description
         meta = soup.find("meta", attrs={"name": "description"})
-        produto["descricao"] = meta["content"].strip() if meta else ""
+        product["description"] = meta["content"].strip() if meta else ""
 
-        # Imagem
+        # Image
         meta = soup.find("meta", property="og:image")
-        produto["imagem"] = meta["content"].strip() if meta else ""
+        product["image"] = meta["content"].strip() if meta else ""
 
-        # URL da oferta no Promobit
+        # Promobit URL
         canonical = soup.find("link", rel="canonical")
-        produto["url_produto"] = canonical["href"] if canonical else ""
+        product["url_produto"] = canonical["href"] if canonical else ""
 
-        # Valores padrão
-        produto["preco"] = 0
-        produto["preco_original"] = 0
-        produto["desconto"] = 0
-        produto["nota"] = None
-        produto["avaliacoes"] = None
-        produto["vendas"] = None
-        produto["estoque"] = None
-        produto["score"] = 0
+        # Default values
+        product["price"] = 0
+        product["original_price"] = 0
+        product["discount"] = 0
+        product["rating"] = None
+        product["reviews"] = None
+        product["sales"] = None
+        product["stock"] = None
+        product["score"] = 0
 
-        # Link de redirecionamento
-        produto["redirect"] = None
+        # Redirect link
+        product["redirect"] = None
 
         for a in soup.find_all("a", href=True):
 
@@ -48,13 +48,12 @@ class OfertaParser:
                 if href.startswith("/"):
                     href = "https://www.promobit.com.br" + href
 
-                produto["redirect"] = href
+                product["redirect"] = href
                 break
 
-        # Classificação da oferta
-        titulo = produto["titulo"].lower()
+        title = product["title"].lower()
 
-        palavras_cupom = [
+        coupon_words = [
             "cupom",
             "voucher",
             "frete",
@@ -65,11 +64,11 @@ class OfertaParser:
             "ganhe",
             "oferta relâmpago"
         ]
-        
-        produto["tipo"] = (
-            "CUPOM"
-            if any(p in titulo for p in palavras_cupom)
-            else "PRODUTO"
+
+        product["type"] = (
+            "COUPON"
+            if any(word in title for word in coupon_words)
+            else "PRODUCT"
         )
 
-        return produto
+        return product
