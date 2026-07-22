@@ -83,7 +83,12 @@ class Repository:
 
         data = obj.__dict__.copy()
 
-        data.pop("id", None)
+        for field in (
+            "id",
+            "created_at",
+            "updated_at"
+        ):
+            data.pop(field, None)
 
         columns = list(data.keys())
 
@@ -123,18 +128,13 @@ class Repository:
             raise ValueError("Objeto sem ID.")
 
         columns = list(data.keys())
-
         values = list(data.values())
 
-        query = sql.SQL(
-            """
+        query = sql.SQL("""
             UPDATE {}
-
             SET {}
-
             WHERE id=%s
-            """
-        ).format(
+        """).format(
             sql.Identifier(self.table),
             sql.SQL(",").join(
                 sql.SQL("{}=%s").format(sql.Identifier(col))
@@ -147,6 +147,8 @@ class Repository:
         self.cursor.execute(query, values)
 
         self.conn.commit()
+
+        return obj
 
     # --------------------------
 

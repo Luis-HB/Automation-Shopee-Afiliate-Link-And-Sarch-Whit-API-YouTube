@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 
 @dataclass
@@ -29,3 +29,15 @@ class Video:
     score: float = 0
 
     created_at: Optional[datetime] = None
+
+    @classmethod
+    def from_dict(cls, data):
+
+        obj = cls()
+
+        for field in cls.__dataclass_fields__:
+
+            if field in data:
+                setattr(obj, field, data[field])
+
+        return obj

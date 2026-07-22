@@ -24,7 +24,7 @@ class OfferParser:
 
         # Promobit URL
         canonical = soup.find("link", rel="canonical")
-        product["url_produto"] = canonical["href"] if canonical else ""
+        product["product_url"] = canonical["href"] if canonical else ""
 
         # Default values
         product["price"] = 0
@@ -72,3 +72,7 @@ class OfferParser:
         )
 
         return product
+
+
+# Compatibilidade apenas para imports antigos
+OfertaParser = OfferParser
