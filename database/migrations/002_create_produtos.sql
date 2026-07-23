@@ -48,6 +48,8 @@ CREATE TABLE produtos (
 
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
+    status_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
     CONSTRAINT fk_descoberta
         FOREIGN KEY (descoberta_id)
         REFERENCES descoberta_produtos(id)

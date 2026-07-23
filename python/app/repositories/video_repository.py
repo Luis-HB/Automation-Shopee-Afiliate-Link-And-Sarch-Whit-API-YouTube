@@ -5,12 +5,16 @@ from models.video import Video
 class VideoRepository:
 
     def __init__(self):
+
         self.conn = get_connection()
         self.cur = self.conn.cursor()
+
+    # -------------------------------------------------------
 
     def upsert(self, video):
 
         try:
+
             self.cur.execute(
                 """
                 INSERT INTO videos_produto
@@ -34,6 +38,7 @@ class VideoRepository:
                 ON CONFLICT (youtube_id)
 
                 DO UPDATE SET
+
                     produto_id = EXCLUDED.produto_id,
                     titulo = EXCLUDED.titulo,
                     canal = EXCLUDED.canal,
@@ -42,7 +47,9 @@ class VideoRepository:
                     views = EXCLUDED.views,
                     likes = EXCLUDED.likes,
                     duracao = EXCLUDED.duracao,
-                    score = EXCLUDED.score;
+                    score = EXCLUDED.score
+
+                RETURNING id;
                 """,
                 (
                     video.produto_id,
@@ -58,31 +65,55 @@ class VideoRepository:
                 ),
             )
 
+            row = self.cur.fetchone()
+
+            video.id = row["id"]
+
             self.conn.commit()
 
+            return video
+
         except Exception:
+
             self.conn.rollback()
             raise
 
-    def close(self):
-        self.cur.close()
-        self.conn.close()
+    # -------------------------------------------------------
 
     def find_by_produto(self, produto_id):
 
-        conn = get_connection()
-        cur = conn.cursor()
-
-        cur.execute("""
+        self.cur.execute(
+            """
             SELECT *
             FROM videos_produto
             WHERE produto_id=%s
             ORDER BY score DESC
-        """, (produto_id,))
+            """,
+            (produto_id,),
+        )
 
-        rows = cur.fetchall()
-
-        cur.close()
-        conn.close()
+        rows = self.cur.fetchall()
 
         return [Video.from_dict(row) for row in rows]
+
+    # -------------------------------------------------------
+
+    def delete(self, id):
+
+        self.cur.execute(
+            """
+            DELETE
+            FROM videos_produto
+            WHERE id=%s
+            """,
+            (id,),
+        )
+
+        self.conn.commit()
+
+    # -------------------------------------------------------
+
+    def close(self):
+
+        self.cur.close()
+        self.conn.close()

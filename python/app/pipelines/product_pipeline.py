@@ -1,10 +1,12 @@
 import time
 
+from python.app.models import product
 from services.product.product_analyzer import ProductAnalyzer
 from services.search.search_query_builder import SearchQueryBuilder
 from services.video.video_discovery_service import VideoDiscoveryService
 from services.ranking.video_ranking_service import VideoRankingService
 from services.context.product_context_builder import ProductContextBuilder
+from services.status.status_service import StatusService
 
 from repositories.video_repository import VideoRepository
 from factories.video_factory import VideoFactory
@@ -22,10 +24,8 @@ class ProductPipeline:
     def process(self, product):
 
         start = time.perf_counter()
-
-        # -------------------------------------
-        # Product analysis
-        # -------------------------------------
+        
+        StatusService.processando(product)
 
         self.analyzer.analyze(product)
 
@@ -33,10 +33,6 @@ class ProductPipeline:
             ProductContextBuilder()
             .product(product)
         )
-
-        # -------------------------------------
-        # Generate search queries
-        # -------------------------------------
 
         queries = SearchQueryBuilder.generate(product)
 
@@ -52,6 +48,8 @@ class ProductPipeline:
         # -------------------------------------
         # Video discovery
         # -------------------------------------
+        
+        StatusService.buscando_videos(product)
 
         try:
 
@@ -60,6 +58,8 @@ class ProductPipeline:
             )
 
         except Exception as e:
+
+            StatusService.erro(product)
 
             context.metadata(
                 video_error=str(e),
@@ -74,10 +74,12 @@ class ProductPipeline:
             videos_found=len(videos),
             providers=self.discovery.provider_names()
         )
+        
+        if not videos:
 
-        # -------------------------------------
-        # Ranking
-        # -------------------------------------
+            StatusService.sem_video(product)
+
+            return context.build()
 
         ranking = []
 
@@ -88,7 +90,14 @@ class ProductPipeline:
                 videos,
                 limit=10
             )
-
+            
+            if ranking:
+                StatusService.videos_encontrados(product)
+                StatusService.ranqueado(product)
+            else:
+                StatusService.sem_video(product)
+            return context.build()
+            
         context.metadata(
             videos_ranked=len(ranking)
         )
@@ -109,13 +118,18 @@ class ProductPipeline:
                 )
 
                 self.video_repo.upsert(video)
-
                 context.add_video(video)
 
                 videos_saved += 1
+                
+                if videos_saved > 0:
+                    StatusService.pronto(product)
+                else:
+                    StatusService.sem_video(product)
 
             except Exception as e:
-
+                
+                StatusService.erro(product)
                 print(f"Error saving video: {e}")
 
         elapsed = round(
@@ -129,5 +143,6 @@ class ProductPipeline:
             pipeline="affiliate",
             version="3.0"
         )
+       
 
         return context.build()
