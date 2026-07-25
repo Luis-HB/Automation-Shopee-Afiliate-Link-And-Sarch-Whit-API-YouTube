@@ -27,6 +27,6 @@ class PublicationPipeline:
         print(f"Publicando {product.titulo}")
         print(f"Vídeo escolhido: {video.titulo}")
 
-        StatusService.publicado(product)
+        # NÃO altera o status aqui
 
         return video

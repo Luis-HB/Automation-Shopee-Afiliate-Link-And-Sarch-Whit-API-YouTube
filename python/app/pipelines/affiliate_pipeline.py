@@ -1,7 +1,6 @@
 import time
 
 from scrapers.shopee_affiliate_scraper import ShopeeAffiliateScraper
-from pipelines.product_pipeline import ProductPipeline
 
 
 class AffiliatePipeline:
@@ -9,7 +8,6 @@ class AffiliatePipeline:
     def __init__(self):
 
         self.scraper = ShopeeAffiliateScraper()
-        self.pipeline = ProductPipeline()
 
     def execute(
 
@@ -27,18 +25,17 @@ class AffiliatePipeline:
 
     ):
 
-        start = time.perf_counter()
+        print("=" * 70)
+        print("AFFILIATE PIPELINE")
+        print("=" * 70)
 
-        contexts = []
+        start = time.perf_counter()
 
         statistics = {
 
             "products_found": 0,
-
             "products_processed": 0,
-
             "products_failed": 0,
-
             "pages": 0
 
         }
@@ -47,42 +44,45 @@ class AffiliatePipeline:
 
         while page <= pages:
 
-            products = self.scraper.execute(
+            print(f"\nProcessando página {page}")
 
-                keyword=keyword,
+            try:
 
-                list_type=list_type,
+                products = self.scraper.execute(
 
-                sort_type=sort_type,
+                    keyword=keyword,
 
-                limit=limit,
+                    list_type=list_type,
 
-                page=page
+                    sort_type=sort_type,
 
-            )
+                    limit=limit,
+
+                    page=page
+
+                )
+
+            except Exception as e:
+
+                print(f"Erro na página {page}: {e}")
+                statistics["products_failed"] += 1
+                break
 
             if not products:
+
+                print("Nenhum produto retornado.")
+
                 break
 
             statistics["pages"] += 1
-
             statistics["products_found"] += len(products)
 
-            for product in products:
+            #
+            # O ProductPipeline é executado dentro do
+            # ShopeeAffiliateScraper.
+            #
 
-                try:
-
-                    context = self.pipeline.process(product)
-
-                    contexts.append(context)
-
-                    statistics["products_processed"] += 1
-
-                except Exception as e:
-
-                    print(e)
-
-                    statistics["products_failed"] += 1
+            statistics["products_processed"] += len(products)
 
             page += 1
 
@@ -94,10 +94,17 @@ class AffiliatePipeline:
 
         )
 
+        print("\nResumo da execução")
+        print("-" * 70)
+        print(f"Páginas processadas : {statistics['pages']}")
+        print(f"Produtos encontrados: {statistics['products_found']}")
+        print(f"Produtos processados: {statistics['products_processed']}")
+        print(f"Falhas             : {statistics['products_failed']}")
+        print(f"Tempo total        : {statistics['total_time']} s")
+        print("-" * 70)
+
         return {
 
-            "statistics": statistics,
-
-            "contexts": contexts
+            "statistics": statistics
 
         }

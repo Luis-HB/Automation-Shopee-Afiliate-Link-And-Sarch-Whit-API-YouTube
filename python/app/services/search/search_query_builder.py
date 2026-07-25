@@ -3,15 +3,6 @@ from services.product.product_analyzer import ProductAnalyzer
 
 class SearchQueryBuilder:
 
-    SUFIXOS = [
-        "review",
-        "shorts",
-        "unboxing",
-        "teste",
-        "análise",
-        "vale a pena"
-    ]
-
     @staticmethod
     def gerar(produto):
 
@@ -32,9 +23,18 @@ class SearchQueryBuilder:
         if not texto_base:
             texto_base = produto.titulo
 
-        consultas = [
-            f"{texto_base} {sufixo}"
-            for sufixo in SearchQueryBuilder.SUFIXOS
+        #
+        # Apenas UMA consulta.
+        # O YoutubeService adicionará "shorts".
+        #
+        return [
+            f"{texto_base} review"
         ]
-        #Remove duplicates while preserving order
-        return list(dict.fromkeys(consultas))
+
+    # ----------------------------------------------------
+    # Alias para compatibilidade
+    # ----------------------------------------------------
+
+    @staticmethod
+    def generate(produto):
+        return SearchQueryBuilder.gerar(produto)

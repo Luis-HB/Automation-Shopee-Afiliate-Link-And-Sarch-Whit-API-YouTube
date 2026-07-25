@@ -82,9 +82,9 @@ class ProductAnalyzer:
             "extras": extras
 
         }
-        
+
     @staticmethod
-    def termo_busca(produto):   
+    def termo_busca(produto):
 
         dados = ProductAnalyzer.analisar(produto.titulo)
 
@@ -101,3 +101,14 @@ class ProductAnalyzer:
         partes.append("review")
 
         return " ".join(partes)
+
+    # ----------------------------------------------------
+    # Alias para a arquitetura nova
+    # ----------------------------------------------------
+
+    @staticmethod
+    def analyze(product):
+
+        return ProductAnalyzer.analisar(
+            product.titulo
+        )

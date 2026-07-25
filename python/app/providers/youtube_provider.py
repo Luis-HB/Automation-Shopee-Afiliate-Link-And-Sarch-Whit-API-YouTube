@@ -1,9 +1,10 @@
 from services.video.youtube_service import YouTubeService
-
 from providers.base_video_provider import BaseVideoProvider
 
 
 class YoutubeProvider(BaseVideoProvider):
+    
+    name = "youtube"
 
     def __init__(self):
 
@@ -21,6 +22,13 @@ class YoutubeProvider(BaseVideoProvider):
             )
 
             for video in encontrados:
-                videos[video["video_id"]] = video
+                videos[video.video_id] = video
 
         return list(videos.values())
+    
+    # -----------------------------------------
+    # Compatibilidade com arquitetura antiga
+    # -----------------------------------------
+
+    def buscar(self, consultas):
+        return self.search(consultas)

@@ -1,5 +1,5 @@
 from psycopg2 import sql
-
+from psycopg2.extras import Json
 from core.database import get_connection
 
 
@@ -93,6 +93,11 @@ class Repository:
         columns = list(data.keys())
 
         values = list(data.values())
+        
+        values = [
+            Json(v) if isinstance(v, dict) else v
+            for v in values
+        ]
 
         query = sql.SQL(
             """
@@ -105,7 +110,7 @@ class Repository:
             sql.SQL(",").join(map(sql.Identifier, columns)),
             sql.SQL(",").join(sql.Placeholder() * len(columns)),
         )
-
+        
         self.cursor.execute(query, values)
 
         obj.id = self.cursor.fetchone()["id"]
@@ -129,6 +134,11 @@ class Repository:
 
         columns = list(data.keys())
         values = list(data.values())
+        
+        values = [
+            Json(v) if isinstance(v, dict) else v
+            for v in values
+        ]
 
         query = sql.SQL("""
             UPDATE {}
@@ -204,6 +214,11 @@ class Repository:
 
         columns = list(data.keys())
         values = list(data.values())
+        
+        values = [
+            Json(v) if isinstance(v, dict) else v
+            for v in values
+        ]
 
         updates = []
 

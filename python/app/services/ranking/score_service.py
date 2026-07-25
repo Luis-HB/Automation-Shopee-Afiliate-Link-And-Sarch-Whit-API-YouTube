@@ -1,5 +1,6 @@
 import math
 import re
+from ShopeeAffiliate.python.app.models import video
 from services.title_normalizer import TitleNormalizer
 
 
@@ -17,6 +18,30 @@ class ScoreService:
         if isinstance(entidade, dict):
             return entidade.get("titulo") or entidade.get("title") or ""
         return getattr(entidade, "titulo", getattr(entidade, "title", ""))
+    
+    @staticmethod
+    def _obter_views(video):
+
+        if isinstance(video, dict):
+            return video.get("views", 0)
+
+        return getattr(video, "views", 0)
+
+    @staticmethod
+    def _obter_likes(video):
+
+        if isinstance(video, dict):
+            return video.get("likes", 0)
+
+        return getattr(video, "likes", 0)
+
+    @staticmethod
+    def _obter_duracao(video):
+
+        if isinstance(video, dict):
+            return video.get("duracao", 0)
+
+        return getattr(video, "duracao", 0)
 
     @staticmethod
     def extrair_marca_modelo(titulo):
@@ -46,7 +71,7 @@ class ScoreService:
 
     @staticmethod
     def score_views(video):
-        views = video.get("views", 0)
+        views = ScoreService._obter_views(video)
         if views >= 1000000: return 40
         if views >= 500000:  return 35
         if views >= 100000:  return 25
@@ -56,7 +81,7 @@ class ScoreService:
     
     @staticmethod
     def score_likes(video):
-        likes = video.get("likes", 0)
+        likes = ScoreService._obter_likes(video)
         if likes >= 100000: return 20
         if likes >= 50000:  return 15
         if likes >= 10000:  return 10
@@ -65,7 +90,7 @@ class ScoreService:
     
     @staticmethod
     def score_duracao(video):
-        segundos = video.get("duracao", 0)
+        segundos = ScoreService._obter_duracao(video)
         if segundos <= 20: return 10
         if segundos <= 40: return 8
         if segundos <= 60: return 6
@@ -74,8 +99,11 @@ class ScoreService:
     @staticmethod
     def score_popularidade(video):
         score = 0
-        score += math.log10(video.get("views", 0) + 1) * 20
-        score += math.log10(video.get("likes", 0) + 1) * 15
+        views = ScoreService._obter_views(video)
+        likes = ScoreService._obter_likes(video)
+
+        score += math.log10(views + 1) * 20
+        score += math.log10(likes + 1) * 15
         return score
 
     @staticmethod
@@ -97,7 +125,7 @@ class ScoreService:
     @staticmethod
     def score_qualidade(video):
         score = 0
-        duracao = video.get("duracao", 0)
+        duracao = ScoreService._obter_duracao(video)
         if duracao <= 30: score += 20
         elif duracao <= 60: score += 15
         elif duracao <= 90: score += 10

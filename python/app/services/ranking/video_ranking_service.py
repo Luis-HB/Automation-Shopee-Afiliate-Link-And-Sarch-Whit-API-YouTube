@@ -1,3 +1,6 @@
+import time
+
+from models.ranking_result import RankingResult
 from services.ranking.score_service import ScoreService
 
 
@@ -6,39 +9,71 @@ class VideoRankingService:
     @staticmethod
     def rank(produto, videos, limite=10, limit=None):
 
-        # Se 'limit' em inglês for passado, usa ele
+        start = time.perf_counter()
+
         if limit is not None:
             limite = limit
 
+        resultado = RankingResult()
+
         unicos = {}
 
-        # Remove vídeos duplicados
+        # Remove duplicados
         for video in videos:
 
-            video_id = video.get("video_id")
+            if video.video_id not in unicos:
 
-            if video_id not in unicos:
-
-                unicos[video_id] = video
-
-        resultado = []
+                unicos[video.video_id] = video
 
         # Calcula score
+
         for video in unicos.values():
 
-            score = ScoreService.calcular(produto, video)
+            video.score = ScoreService.calculate(
+                produto,
+                video
+            )
 
-            video["score"] = score
+        ordenados = sorted(
 
-            resultado.append(video)
+            unicos.values(),
 
-        # Ordena do maior para o menor
-        resultado.sort(
-
-            key=lambda x: x["score"],
+            key=lambda x: x.score,
 
             reverse=True
 
         )
 
-        return resultado[:limite]
+        aprovados = ordenados[:limite]
+
+        resultado.videos = aprovados
+
+        resultado.discarded = max(
+            0,
+            len(ordenados) - len(aprovados)
+        )
+
+        resultado.elapsed = round(
+
+            time.perf_counter() - start,
+
+            3
+
+        )
+
+        resultado.calculate_statistics()
+
+        return resultado
+
+    # ---------------------------------------------------
+    # Compatibilidade
+    # ---------------------------------------------------
+
+    @staticmethod
+    def rankear(produto, videos, limite=10):
+
+        return VideoRankingService.rank(
+            produto,
+            videos,
+            limite
+        )

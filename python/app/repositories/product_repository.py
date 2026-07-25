@@ -28,6 +28,14 @@ class ProductRepository(Repository):
             "shopee_id",
             shopee_id
         )
+        
+    def buscar_pronto(self):
+
+        return (
+            self.where("status", "PRONTO")
+            .order_by("score", "DESC")
+            .first()
+        )
 
     def list_new(self):
 

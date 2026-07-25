@@ -11,7 +11,12 @@ class VideoRepository:
 
     # -------------------------------------------------------
 
-    def upsert(self, video):
+    def upsert(self, video: Video):
+
+        youtube_id = getattr(video, "youtube_id", None)
+
+        if youtube_id is None:
+            youtube_id = getattr(video, "video_id", None)
 
         try:
 
@@ -53,7 +58,7 @@ class VideoRepository:
                 """,
                 (
                     video.produto_id,
-                    video.youtube_id,
+                    youtube_id,
                     video.titulo,
                     video.canal,
                     video.thumbnail,
@@ -67,7 +72,9 @@ class VideoRepository:
 
             row = self.cur.fetchone()
 
-            video.id = row["id"]
+            if row:
+
+                video.id = row["id"]
 
             self.conn.commit()
 
@@ -94,11 +101,14 @@ class VideoRepository:
 
         rows = self.cur.fetchall()
 
-        return [Video.from_dict(row) for row in rows]
+        return [
+            Video.from_dict(row)
+            for row in rows
+        ]
 
     # -------------------------------------------------------
 
-    def delete(self, id):
+    def delete(self, video_id):
 
         self.cur.execute(
             """
@@ -106,7 +116,7 @@ class VideoRepository:
             FROM videos_produto
             WHERE id=%s
             """,
-            (id,),
+            (video_id,),
         )
 
         self.conn.commit()

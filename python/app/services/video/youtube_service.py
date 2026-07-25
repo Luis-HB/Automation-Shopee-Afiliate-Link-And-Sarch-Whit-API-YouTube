@@ -1,7 +1,7 @@
 import re
 import requests
 from core.config.settings import YOUTUBE_API_KEY
-
+from models.video_result import VideoResult
 
 class YouTubeService:
 
@@ -11,7 +11,7 @@ class YouTubeService:
     def __init__(self, api_key=None):
 
         self.api_key = api_key or YOUTUBE_API_KEY
-        
+
         if not self.api_key:
             raise ValueError("YOUTUBE_API_KEY não configurada.")
 
@@ -28,14 +28,24 @@ class YouTubeService:
             "order": "relevance"
         }
 
-        response = requests.get(
-            self.SEARCH_URL,
-            params=params,
-            timeout=30
-        )
-        response.raise_for_status()
+        try:
 
-        return response.json()
+            response = requests.get(
+                self.SEARCH_URL,
+                params=params,
+                timeout=30
+            )
+
+            response.raise_for_status()
+
+            return response.json()
+
+        except requests.exceptions.HTTPError as e:
+
+            if e.response is not None and e.response.status_code == 429:
+                raise RuntimeError("YOUTUBE_QUOTA_EXCEEDED") from e
+
+            raise
 
     def buscar_detalhes(self, video_ids):
 
@@ -50,6 +60,7 @@ class YouTubeService:
             params=params,
             timeout=30
         )
+
         response.raise_for_status()
 
         return response.json()
@@ -76,7 +87,19 @@ class YouTubeService:
 
     def buscar_shorts(self, termo, maxResults=20):
 
-        busca = self.buscar(termo, maxResults)
+        try:
+
+            busca = self.buscar(
+                termo,
+                maxResults
+            )
+
+        except RuntimeError as e:
+
+            if str(e) == "YOUTUBE_QUOTA_EXCEEDED":
+                raise
+
+            raise
 
         video_ids = [
             item["id"]["videoId"]
@@ -101,21 +124,34 @@ class YouTubeService:
             if segundos > 180:
                 continue
 
-            videos.append({
-                "video_id": item["id"],
-                "titulo": item["snippet"]["title"],
-                "url": f"https://www.youtube.com/watch?v={item['id']}",
-                "thumbnail": item["snippet"]["thumbnails"]["high"]["url"],
-                "canal": item["snippet"]["channelTitle"],
-                "views": int(item["statistics"].get("viewCount", 0)),
-                "likes": int(item["statistics"].get("likeCount", 0)),
-                "duracao": segundos
-            })
+            videos.append(
+
+                VideoResult(
+
+                    provider="youtube",
+
+                    video_id=item["id"],
+
+                    titulo=item["snippet"]["title"],
+
+                    url=f"https://www.youtube.com/watch?v={item['id']}",
+
+                    thumbnail=item["snippet"]["thumbnails"]["high"]["url"],
+
+                    canal=item["snippet"]["channelTitle"],
+
+                    views=int(item["statistics"].get("viewCount", 0)),
+
+                    likes=int(item["statistics"].get("likeCount", 0)),
+
+                    duracao=segundos
+                )
+            )
 
         videos.sort(
             key=lambda x: (
-                x["views"],
-                x["likes"]
+                x.views,
+                x.likes
             ),
             reverse=True
         )
@@ -124,6 +160,7 @@ class YouTubeService:
 
     @staticmethod
     def filtrar_produto(videos, termo):
+
         palavras = [
             p.lower()
             for p in termo.split()
@@ -134,7 +171,7 @@ class YouTubeService:
 
         for video in videos:
 
-            titulo = video["titulo"].lower()
+            titulo = video.titulo.lower()
 
             if all(p in titulo for p in palavras):
                 resultado.append(video)
@@ -142,8 +179,15 @@ class YouTubeService:
         return resultado
 
     # Aliases de compatibilidade para chamadas em inglês
+
     def search_shorts(self, query, max_results=20, **kwargs):
-        return self.buscar_shorts(termo=query, maxResults=max_results)
+        return self.buscar_shorts(
+            termo=query,
+            maxResults=max_results
+        )
 
     def search(self, query, max_results=20, **kwargs):
-        return self.buscar(termo=query, maxResults=max_results)
+        return self.buscar(
+            termo=query,
+            maxResults=max_results
+        )

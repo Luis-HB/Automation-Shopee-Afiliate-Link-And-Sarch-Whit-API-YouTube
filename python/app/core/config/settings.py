@@ -39,6 +39,19 @@ SHOPEE_CONFIG = {
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 # ======================================================
+# n8n
+# ======================================================
+
+N8N_CONFIG = {
+
+    "publication_webhook": os.getenv(
+        "N8N_PUBLICATION_WEBHOOK",
+        "http://n8n:5678/webhook/publication"
+    ),
+
+}
+
+# ======================================================
 # Ambiente
 # ======================================================
 
