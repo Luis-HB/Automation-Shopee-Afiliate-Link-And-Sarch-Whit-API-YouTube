@@ -1,5 +1,7 @@
 import time
 
+from models.affiliate_pipeline_result import AffiliatePipelineResult
+
 from scrapers.shopee_affiliate_scraper import ShopeeAffiliateScraper
 
 
@@ -31,14 +33,7 @@ class AffiliatePipeline:
 
         start = time.perf_counter()
 
-        statistics = {
-
-            "products_found": 0,
-            "products_processed": 0,
-            "products_failed": 0,
-            "pages": 0
-
-        }
+        result = AffiliatePipelineResult()
 
         page = 1
 
@@ -48,7 +43,7 @@ class AffiliatePipeline:
 
             try:
 
-                products = self.scraper.execute(
+                pipeline_results = self.scraper.execute(
 
                     keyword=keyword,
 
@@ -65,28 +60,28 @@ class AffiliatePipeline:
             except Exception as e:
 
                 print(f"Erro na página {page}: {e}")
-                statistics["products_failed"] += 1
+
+                result.add_error(e)
+
                 break
 
-            if not products:
+            if not pipeline_results:
 
                 print("Nenhum produto retornado.")
 
                 break
 
-            statistics["pages"] += 1
-            statistics["products_found"] += len(products)
+            result.pages_processed += 1
 
-            #
-            # O ProductPipeline é executado dentro do
-            # ShopeeAffiliateScraper.
-            #
+            result.products_found += len(pipeline_results)
 
-            statistics["products_processed"] += len(products)
+            for pipeline_result in pipeline_results:
+
+                result.add_result(pipeline_result)
 
             page += 1
 
-        statistics["total_time"] = round(
+        result.processing_time = round(
 
             time.perf_counter() - start,
 
@@ -96,15 +91,21 @@ class AffiliatePipeline:
 
         print("\nResumo da execução")
         print("-" * 70)
-        print(f"Páginas processadas : {statistics['pages']}")
-        print(f"Produtos encontrados: {statistics['products_found']}")
-        print(f"Produtos processados: {statistics['products_processed']}")
-        print(f"Falhas             : {statistics['products_failed']}")
-        print(f"Tempo total        : {statistics['total_time']} s")
+        print(f"Páginas processadas : {result.pages_processed}")
+        print(f"Produtos encontrados: {result.products_found}")
+        print(f"Produtos processados: {result.products_processed}")
+        print(f"Produtos com falha : {result.products_failed}")
+        print(f"Vídeos encontrados : {result.videos_found}")
+        print(f"Vídeos salvos      : {result.videos_saved}")
+        print(f"Tempo total        : {result.processing_time} s")
         print("-" * 70)
 
-        return {
+        return result
 
-            "statistics": statistics
+    # -------------------------------------------------
+    # Alias
+    # -------------------------------------------------
 
-        }
+    def executar(self, **kwargs):
+
+        return self.execute(**kwargs)

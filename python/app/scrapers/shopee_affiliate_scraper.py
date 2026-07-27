@@ -1,4 +1,5 @@
 from models.search_config import SearchConfig
+from models.affiliate_result import AffiliateResult
 
 from services.affiliate.affiliate_service import AffiliateService
 
@@ -45,9 +46,11 @@ class ShopeeAffiliateScraper:
 
         produtos_api = self.api.buscar_produtos(config)
 
-        resultados = []
+        result = AffiliateResult()
 
-        print(f"{len(produtos_api)} produtos encontrados.\n")
+        result.products_found = len(produtos_api)
+
+        print(f"{result.products_found} produtos encontrados.\n")
 
         for dados in produtos_api:
 
@@ -65,7 +68,7 @@ class ShopeeAffiliateScraper:
 
                         pipeline_result = self.pipeline.process(produto)
 
-                        resultados.append(pipeline_result)
+                        result.add_pipeline(pipeline_result)
 
                         print("   Pipeline concluído.")
 
@@ -73,18 +76,22 @@ class ShopeeAffiliateScraper:
 
                         print(f"   Erro no pipeline: {erro}")
 
+                        result.add_failure()
+
                 else:
 
-                    resultados.append(produto)
+                    result.products_processed += 1
 
             except Exception as erro:
 
                 print(f"Erro ao processar produto: {erro}")
 
-        return resultados
+                result.add_failure()
+
+        return result
 
     # -----------------------------------------------------
-    # Alias compatível com a arquitetura nova
+    # Alias compatível
     # -----------------------------------------------------
 
     def execute(

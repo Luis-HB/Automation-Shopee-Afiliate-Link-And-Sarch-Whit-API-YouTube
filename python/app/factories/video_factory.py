@@ -5,29 +5,34 @@ from models.video_result import VideoResult
 class VideoFactory:
 
     @staticmethod
-    def from_result(result: VideoResult, produto_id: int):
+    def from_result(result: VideoResult, produto_id: int) -> Video:
 
-        video = Video()
+        return Video(
 
-        video.produto_id = produto_id
+            produto_id=produto_id,
 
-        video.video_id = result.video_id
-        video.titulo = result.titulo
-        video.url = result.url
-        video.thumbnail = result.thumbnail
-        video.canal = result.canal
+            youtube_id=result.video_id,
 
-        video.views = result.views
-        video.likes = result.likes
-        video.duracao = result.duracao
+            titulo=result.titulo,
 
-        video.score = result.score
-        video.provider = result.provider
+            canal=result.canal,
 
-        return video
+            thumbnail=result.thumbnail,
+
+            url=result.url,
+
+            views=result.views,
+
+            likes=result.likes,
+
+            duracao=result.duracao,
+
+            score=result.score
+
+        )
 
     # -------------------------------------------------------
-    # Compatibilidade com código legado
+    # Compatibilidade temporária
     # -------------------------------------------------------
 
     @staticmethod
@@ -36,21 +41,26 @@ class VideoFactory:
         if isinstance(data, VideoResult):
             return VideoFactory.from_result(data, produto_id)
 
-        video = Video()
+        return Video(
 
-        video.produto_id = produto_id
+            produto_id=produto_id,
 
-        video.video_id = data.get("video_id")
-        video.titulo = data.get("titulo")
-        video.url = data.get("url")
-        video.thumbnail = data.get("thumbnail")
-        video.canal = data.get("canal")
+            youtube_id=data.get("video_id", ""),
 
-        video.views = data.get("views", 0)
-        video.likes = data.get("likes", 0)
-        video.duracao = data.get("duracao", 0)
+            titulo=data.get("titulo", ""),
 
-        video.score = data.get("score", 0)
-        video.provider = data.get("provider", "")
+            canal=data.get("canal", ""),
 
-        return video
+            thumbnail=data.get("thumbnail", ""),
+
+            url=data.get("url", ""),
+
+            views=data.get("views", 0),
+
+            likes=data.get("likes", 0),
+
+            duracao=data.get("duracao", 0),
+
+            score=data.get("score", 0)
+
+        )

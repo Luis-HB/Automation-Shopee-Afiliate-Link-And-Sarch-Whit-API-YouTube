@@ -13,4 +13,21 @@ class AffiliateJob:
         print("AFFILIATE JOB")
         print("=" * 70)
 
-        return self.pipeline.execute()
+        try:
+
+            return self.pipeline.execute()
+
+        except RuntimeError as e:
+
+            if str(e) == "YOUTUBE_QUOTA_EXCEEDED":
+
+                print()
+                print("=" * 70)
+                print("Quota da API do YouTube esgotada.")
+                print("AffiliateJob interrompido.")
+                print("=" * 70)
+                print()
+
+                raise
+
+            raise

@@ -10,13 +10,23 @@ class Scheduler:
         print("INICIANDO SCHEDULER")
         print("=" * 70)
 
+        affiliate_result = None
+
+        # -----------------------------------
+        # Affiliate
+        # -----------------------------------
+
         try:
 
-            AffiliateJob().execute()
+            affiliate_result = AffiliateJob().execute()
 
         except Exception as e:
 
             print(f"[AffiliateJob] {e}")
+
+        # -----------------------------------
+        # Publication
+        # -----------------------------------
 
         try:
 
@@ -24,7 +34,6 @@ class Scheduler:
 
         except Exception as e:
 
-            if "429" in str(e):
-                raise RuntimeError("Quota da API do YouTube excedida")
+            print(f"[PublicationJob] {e}")
 
-            raise
+        return affiliate_result

@@ -7,62 +7,77 @@ from models.pipeline_result import PipelineResult
 @dataclass
 class AffiliatePipelineResult:
 
-    pipeline_results: List[PipelineResult] = field(default_factory=list)
-
-    products_found: int = 0
-
-    products_processed: int = 0
-
-    products_failed: int = 0
-
-    pages_processed: int = 0
-
-    processing_time: float = 0
-
-    success: bool = True
+    results: List[PipelineResult] = field(default_factory=list)
 
     errors: List[str] = field(default_factory=list)
 
-    # -----------------------------------------------------
+    processing_time: float = 0
 
-    def add_result(self, result):
+    pages_processed: int = 0
 
-        self.pipeline_results.append(result)
+    def add_result(self, result: PipelineResult):
 
-        self.products_processed += 1
-
-        if not result.success:
-
-            self.products_failed += 1
-
-    # -----------------------------------------------------
+        self.results.append(result)
 
     def add_error(self, error):
 
         self.errors.append(str(error))
 
-        self.success = False
+    # -------------------------------------------------
+    # Estatísticas calculadas automaticamente
+    # -------------------------------------------------
 
-    # -----------------------------------------------------
+    @property
+    def products_found(self):
+        return len(self.results)
+
+    @property
+    def products_processed(self):
+        return len(self.results)
+
+    @property
+    def products_failed(self):
+        return len([r for r in self.results if not r.success])
 
     @property
     def videos_found(self):
+        return sum(
+            getattr(r.discovery, "total", 0)
+            for r in self.results
+            if r.discovery
+        )
 
-        total = 0
-
-        for result in self.pipeline_results:
-
-            total += result.videos_found
-
-        return total
+    @property
+    def videos_ranked(self):
+        return sum(
+            getattr(r.ranking, "total", 0)
+            for r in self.results
+            if r.ranking
+        )
 
     @property
     def videos_saved(self):
+        return sum(
+            len(r.videos)
+            for r in self.results
+        )
 
-        total = 0
+    @property
+    def success(self):
+        return self.products_failed == 0
 
-        for result in self.pipeline_results:
+    def to_dict(self):
 
-            total += len(result.videos)
-
-        return total
+        return {
+            "success": self.success,
+            "pages_processed": self.pages_processed,
+            "products_found": self.products_found,
+            "products_processed": self.products_processed,
+            "products_failed": self.products_failed,
+            "videos_found": self.videos_found,
+            "videos_ranked": self.videos_ranked,
+            "videos_saved": self.videos_saved,
+            "processing_time": self.processing_time,
+            "errors": self.errors,
+            "results": self.results
+        }

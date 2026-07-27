@@ -23,41 +23,15 @@ class ProductPipeline:
 
     def process(self, product):
 
-        print("=" * 70)
-        print(">>> PRODUCT PIPELINE <<<")
-        print(product.titulo)
-        print("=" * 70)
-
         start = time.perf_counter()
 
-        # -------------------------------------------------
-        # Produto em processamento
-        # -------------------------------------------------
-
-        StatusService.processando(product)
-
-        print("1 - Analyzer")
-
-        self.analyzer.analyze(product)
+        self._start(product)
 
         result = PipelineResult(product)
 
-        # -------------------------------------------------
-        # Geração das consultas
-        # -------------------------------------------------
+        self._analyze(product)
 
-        print("2 - Queries")
-
-        queries = SearchQueryBuilder.generate(product)
-
-        print(queries)
-
-        result.set_metadata(
-            source="affiliate_api",
-            queries_generated=len(queries),
-            search_strategy="multi_provider",
-            queries=queries
-        )
+        queries = self._build_queries(product, result)
 
         # -------------------------------------------------
         # Busca dos vídeos
@@ -233,7 +207,45 @@ class ProductPipeline:
         print(f"STATUS FINAL: {product.status}")
         print("=" * 70)
 
-        return result  
+        return result
+    
+    # =====================================================
+    # Etapas do pipeline
+    # =====================================================
+
+    def _start(self, product):
+
+        print("=" * 70)
+        print(">>> PRODUCT PIPELINE <<<")
+        print(product.titulo)
+        print("=" * 70)
+
+        StatusService.processando(product)
+
+
+    def _analyze(self, product):
+
+        print("1 - Analyzer")
+
+        self.analyzer.analyze(product)
+
+
+    def _build_queries(self, product, result):
+
+        print("2 - Queries")
+
+        queries = SearchQueryBuilder.generate(product)
+
+        print(queries)
+
+        result.set_metadata(
+            source="affiliate_api",
+            queries_generated=len(queries),
+            search_strategy="multi_provider",
+            queries=queries
+        )
+
+        return queries  
 
     # -------------------------------------------------
     # Alias

@@ -1,7 +1,7 @@
-import hashlib
 from decimal import Decimal
 
 from models.product import Product
+from services.product.product_hash_service import ProductHashService
 
 
 class ProductFactory:
@@ -18,26 +18,30 @@ class ProductFactory:
             or data.get("titulo", "")
         )
 
-        hash_produto = hashlib.sha256(
-            url.encode("utf-8")
-        ).hexdigest()
-
         return Product(
 
-            hash_produto=hash_produto,
+            hash_produto=ProductHashService.generate(url),
 
             titulo=data.get("title") or data.get("titulo", ""),
 
             descricao=data.get("description") or data.get("descricao"),
 
-            preco=Decimal(str(data.get("price") or data.get("preco", 0))),
+            preco=Decimal(
+                str(data.get("price") or data.get("preco", 0))
+            ),
 
             preco_original=Decimal(
-                str(data.get("original_price") or data.get("preco_original", 0))
+                str(
+                    data.get("original_price")
+                    or data.get("preco_original", 0)
+                )
             ),
 
             desconto=Decimal(
-                str(data.get("discount") or data.get("desconto", 0))
+                str(
+                    data.get("discount")
+                    or data.get("desconto", 0)
+                )
             ),
 
             nota=data.get("rating") or data.get("nota"),
@@ -71,19 +75,17 @@ class ProductFactory:
             or str(data.get("itemId", ""))
         )
 
-        hash_produto = hashlib.sha256(
-            url.encode("utf-8")
-        ).hexdigest()
-
         return Product(
 
             shopee_id=str(data.get("itemId", "")),
 
-            hash_produto=hash_produto,
+            hash_produto=ProductHashService.generate(url),
 
             titulo=data.get("productName", ""),
 
-            preco=Decimal(str(data.get("priceMin", 0))),
+            preco=Decimal(
+                str(data.get("priceMin", 0))
+            ),
 
             preco_original=Decimal(
                 str(data.get("priceMax", 0))
