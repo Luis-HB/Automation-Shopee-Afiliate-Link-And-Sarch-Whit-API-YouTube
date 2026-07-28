@@ -1,10 +1,9 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
 class VideoResult:
-
-    provider: str
 
     video_id: str
 
@@ -12,9 +11,9 @@ class VideoResult:
 
     url: str
 
-    thumbnail: str = ""
+    thumbnail: str
 
-    canal: str = ""
+    canal: str
 
     views: int = 0
 
@@ -24,4 +23,20 @@ class VideoResult:
 
     score: float = 0
 
-    metadata: dict = field(default_factory=dict)
+    provider: str = ""
+
+    # =====================================================
+    # Origem do vídeo
+    # =====================================================
+
+    query: str = ""
+
+    query_order: int = 0
+
+    query_id: Optional[int] = None
+
+    provider_query_id: Optional[int] = None
+
+    # =====================================================
+
+    metadata: dict | None = None

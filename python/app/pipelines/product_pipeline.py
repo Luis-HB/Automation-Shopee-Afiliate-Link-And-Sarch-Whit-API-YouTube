@@ -2,24 +2,30 @@ import time
 
 from models.pipeline_result import PipelineResult
 
-from services.product.product_analyzer import ProductAnalyzer
-from services.search.search_query_builder import SearchQueryBuilder
-from services.video.video_discovery_service import VideoDiscoveryService
-from services.ranking.video_ranking_service import VideoRankingService
-from services.status.status_service import StatusService
+from pipelines.actions.analyze_product_action import AnalyzeProductAction
+from pipelines.actions.build_query_action import BuildQueriesAction
+from pipelines.actions.discovery_videos_action import DiscoverVideosAction
+from pipelines.actions.rank_videos_action import RankVideosAction
+from pipelines.actions.save_videos_action import SaveVideosAction
+from pipelines.actions.finish_pipeline_action import FinishPipelineAction
 
-from repositories.video_repository import VideoRepository
-from factories.video_factory import VideoFactory
+from services.status.status_service import StatusService
 
 
 class ProductPipeline:
 
     def __init__(self):
 
-        self.analyzer = ProductAnalyzer()
-        self.discovery = VideoDiscoveryService()
-        self.ranking = VideoRankingService()
-        self.video_repo = VideoRepository()
+        self.analyze = AnalyzeProductAction()
+        self.build_queries = BuildQueriesAction()
+        self.discovery = DiscoverVideosAction()
+        self.ranking = RankVideosAction()
+        self.save_videos = SaveVideosAction()
+        self.finish_pipeline = FinishPipelineAction()
+
+    # =====================================================
+    # Pipeline
+    # =====================================================
 
     def process(self, product):
 
@@ -29,188 +35,74 @@ class ProductPipeline:
 
         result = PipelineResult(product)
 
-        self._analyze(product)
-
-        queries = self._build_queries(product, result)
-
         # -------------------------------------------------
-        # Busca dos vídeos
+        # 1 - Analyzer
         # -------------------------------------------------
 
-        print("3 - Descoberta")
+        self.analyze.execute(product)
 
-        StatusService.buscando_videos(product)
+        # -------------------------------------------------
+        # 2 - Queries
+        # -------------------------------------------------
 
-        try:
+        queries = self._build_queries(
+            product,
+            result
+        )
 
-            discovery = self.discovery.search(queries)
+        # -------------------------------------------------
+        # 3 - Discovery
+        # -------------------------------------------------
 
-            videos = discovery.videos
+        discovery = self._discover(
+            product,
+            queries,
+            result
+        )
 
-            print(f"Vídeos encontrados: {discovery.total}")
-
-        except RuntimeError as e:
-
-            if str(e) == "YOUTUBE_QUOTA_EXCEEDED":
-
-                print()
-                print("=" * 70)
-                print("QUOTA DA API DO YOUTUBE ESGOTADA")
-                print("Interrompendo descoberta de vídeos.")
-                print("=" * 70)
-                print()
-
-                raise
-
-            raise
-
-        except Exception as e:
-
-            print("ERRO NA BUSCA")
-            print(e)
-
-            StatusService.erro(product)
-
-            result.add_error(e)
-
-            result.set_metadata(
-                video_error=str(e),
-                videos_found=0,
-                videos_ranked=0,
-                videos_saved=0
-            )
-
-            return result.to_dict()
+        if discovery is None:
+            return result
 
         result.discovery = discovery
 
-        # Compatibilidade temporária
-        result.set_metadata(
-            videos_found=discovery.total,
-            providers=discovery.providers,
-            failed_providers=discovery.failed_providers,
-            discovery_time=discovery.elapsed
-        )
-
-        if discovery.total == 0:
-
-            print("Nenhum vídeo encontrado.")
-
-            StatusService.sem_video(product)
-
-            return result.to_dict()
-
         # -------------------------------------------------
-        # Ranking
+        # 4 - Ranking
         # -------------------------------------------------
 
-        print("4 - Ranking")
-
-        ranking = self.ranking.rank(
+        ranking = self._rank(
             product,
-            videos,
-            limit=10
+            discovery,
+            result
         )
 
-        print(f"Ranking gerado: {ranking.total}")
+        if ranking is None:
+            return result
 
         result.ranking = ranking
 
-        # Compatibilidade temporária
-        result.set_metadata(
-            videos_ranked=ranking.total,
-            average_score=ranking.average_score,
-            highest_score=ranking.highest_score,
-            lowest_score=ranking.lowest_score,
-            ranking_time=ranking.elapsed,
-            discarded=ranking.discarded
+        # -------------------------------------------------
+        # 5 - Persistência
+        # -------------------------------------------------
+
+        videos_saved = self._save(
+            product,
+            ranking,
+            result
         )
 
-        if ranking.total == 0:
-
-            print("Nenhum vídeo aprovado no ranking.")
-
-            StatusService.sem_video(product)
-
-            return result.to_dict()
-
-        StatusService.videos_encontrados(product)
-        StatusService.ranqueado(product)
-
         # -------------------------------------------------
-        # Persistência
+        # Finalização
         # -------------------------------------------------
 
-        print("5 - Salvando vídeos")
-
-        videos_saved = 0
-
-        for data in ranking.videos:
-
-            try:
-
-                print(f"Salvando: {data.titulo}")
-
-                video = VideoFactory.from_result(
-                    data,
-                    product.id
-                )
-
-                self.video_repo.upsert(video)
-
-                result.add_video(video)
-
-                videos_saved += 1
-
-            except Exception as e:
-
-                print("Erro ao salvar vídeo:")
-                print(e)
-
-                result.add_error(e)
-
-                StatusService.erro(product)
-
-        print(f"Vídeos salvos: {videos_saved}")
-
-        # -------------------------------------------------
-        # Status final
-        # -------------------------------------------------
-
-        if videos_saved > 0:
-
-            StatusService.pronto(product)
-            result.success = True
-
-        else:
-
-            StatusService.sem_video(product)
-            result.success = False
-
-        elapsed = round(
-            time.perf_counter() - start,
-            2
+        return self._finish(
+            product,
+            result,
+            videos_saved,
+            start
         )
 
-        result.processing_time = elapsed
-        result.pipeline = "affiliate"
-        result.version = "4.0"
-
-        # Compatibilidade temporária
-        result.set_metadata(
-            processing_time=elapsed,
-            pipeline="affiliate",
-            version="4.0",
-            videos_saved=videos_saved
-        )
-
-        print(f"STATUS FINAL: {product.status}")
-        print("=" * 70)
-
-        return result
-    
     # =====================================================
-    # Etapas do pipeline
+    # Etapas
     # =====================================================
 
     def _start(self, product):
@@ -222,34 +114,63 @@ class ProductPipeline:
 
         StatusService.processando(product)
 
-
-    def _analyze(self, product):
-
-        print("1 - Analyzer")
-
-        self.analyzer.analyze(product)
-
-
     def _build_queries(self, product, result):
 
         print("2 - Queries")
 
-        queries = SearchQueryBuilder.generate(product)
-
-        print(queries)
-
-        result.set_metadata(
-            source="affiliate_api",
-            queries_generated=len(queries),
-            search_strategy="multi_provider",
-            queries=queries
+        return self.build_queries.execute(
+            product,
+            result
         )
 
-        return queries  
+    def _discover(self, product, queries, result):
 
-    # -------------------------------------------------
+        print("3 - Discovery")
+
+        return self.discovery.execute(
+            product,
+            queries,
+            result
+        )
+
+    def _rank(self, product, discovery, result):
+
+        print("4 - Ranking")
+
+        return self.ranking.execute(
+            product,
+            discovery,
+            result
+        )
+
+    def _save(self, product, ranking, result):
+
+        print("5 - Saving")
+
+        return self.save_videos.execute(
+            product,
+            ranking,
+            result
+        )
+
+    def _finish(
+        self,
+        product,
+        result,
+        videos_saved,
+        start
+    ):
+
+        return self.finish_pipeline.execute(
+            product,
+            result,
+            start,
+            videos_saved
+        )
+
+    # =====================================================
     # Alias
-    # -------------------------------------------------
+    # =====================================================
 
     def processar(self, product):
         return self.process(product)
