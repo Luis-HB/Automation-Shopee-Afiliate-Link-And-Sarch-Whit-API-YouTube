@@ -18,8 +18,6 @@ class SearchResultFactory:
 
         selected=False,
 
-        metadata=None
-
     ):
 
         result = SearchResult()
@@ -35,7 +33,5 @@ class SearchResultFactory:
         result.ranking_score = ranking_score
 
         result.selected = selected
-
-        result.metadata = metadata or {}
 
         return result

@@ -40,6 +40,14 @@ class SearchQueryRepository(Repository):
         )
 
     # ====================================================
+    # Arquitetura nova
+    # ====================================================
+
+    def find_by_product(self, product_id):
+
+        return self.find_by_produto(product_id)
+
+    # ====================================================
     # Compatibilidade
     # ====================================================
 

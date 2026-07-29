@@ -20,8 +20,6 @@ class SearchResult:
 
     selected: bool = False
 
-    metadata: dict = None
-
     created_at: Optional[datetime] = None
 
     @classmethod

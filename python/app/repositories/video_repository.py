@@ -9,7 +9,9 @@ class VideoRepository:
         self.conn = get_connection()
         self.cur = self.conn.cursor()
 
-    # -------------------------------------------------------
+    # =====================================================
+    # Persistência
+    # =====================================================
 
     def upsert(self, video: Video):
 
@@ -73,7 +75,6 @@ class VideoRepository:
             row = self.cur.fetchone()
 
             if row:
-
                 video.id = row["id"]
 
             self.conn.commit()
@@ -83,9 +84,12 @@ class VideoRepository:
         except Exception:
 
             self.conn.rollback()
+
             raise
 
-    # -------------------------------------------------------
+    # =====================================================
+    # Consultas
+    # =====================================================
 
     def find_by_produto(self, produto_id):
 
@@ -106,7 +110,17 @@ class VideoRepository:
             for row in rows
         ]
 
-    # -------------------------------------------------------
+    # -----------------------------------------------------
+    # Alias da arquitetura nova
+    # -----------------------------------------------------
+
+    def find_by_product(self, product_id):
+
+        return self.find_by_produto(product_id)
+
+    # =====================================================
+    # Remoção
+    # =====================================================
 
     def delete(self, video_id):
 
@@ -121,9 +135,10 @@ class VideoRepository:
 
         self.conn.commit()
 
-    # -------------------------------------------------------
+    # =====================================================
 
     def close(self):
 
         self.cur.close()
+
         self.conn.close()

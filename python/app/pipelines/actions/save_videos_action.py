@@ -65,20 +65,6 @@ class SaveVideosAction:
 
                         selected=True,
 
-                        metadata={
-
-                            "provider": video_result.provider,
-
-                            "query": video_result.query,
-
-                            "views": video_result.views,
-
-                            "likes": video_result.likes,
-
-                            "duration": video_result.duracao
-
-                        }
-
                     )
 
                     self.search_result_repo.save(

@@ -23,16 +23,23 @@ class SearchQueryBuilder:
         if not texto_base:
             texto_base = produto.titulo
 
-        #
-        # Apenas UMA consulta.
-        # O YoutubeService adicionará "shorts".
-        #
-        return [
-            f"{texto_base} review"
+        consultas = [
+
+            f"{texto_base} review",
+
+            f"{texto_base} unboxing",
+
+            f"{texto_base} teste",
+
+            f"{texto_base} análise"
+
         ]
 
+        # remove duplicadas mantendo a ordem
+        return list(dict.fromkeys(consultas))
+
     # ----------------------------------------------------
-    # Alias para compatibilidade
+    # Alias
     # ----------------------------------------------------
 
     @staticmethod
