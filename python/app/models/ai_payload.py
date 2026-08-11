@@ -1,33 +1,53 @@
 from dataclasses import dataclass, field, asdict
+from datetime import datetime
+
+
+from models.commercial.knowledge import Knowledge
+from models.commercial.evidence import Evidence
 
 
 @dataclass
 class AIPayload:
 
-    #
-    # Informações do pipeline
-    #
-    pipeline: dict = field(default_factory=dict)
+    # =====================================================
+    # Informações do Produto
+    # =====================================================
 
-    #
-    # Produto analisado
-    #
-    produto: dict = field(default_factory=dict)
+    product: dict = field(default_factory=dict)
 
-    #
-    # Consultas realizadas
-    #
-    consultas: list = field(default_factory=list)
+    # =====================================================
+    # Conhecimento produzido pelo pipeline
+    # =====================================================
 
-    #
-    # Informações adicionais
-    #
+    knowledge: Knowledge | None = None
+
+    # =====================================================
+    # Evidências utilizadas
+    # =====================================================
+
+    evidence: Evidence | None = None
+
+    # =====================================================
+    # Metadados do processamento
+    # =====================================================
+
     metadata: dict = field(default_factory=dict)
 
-    #
+    # =====================================================
     # Configuração do agente
-    #
+    # =====================================================
+
     config: dict = field(default_factory=dict)
+
+    # =====================================================
+    # Informações do Payload
+    # =====================================================
+
+    version: str = "1.0"
+
+    generated_at: str = field(
+        default_factory=lambda: datetime.utcnow().isoformat()
+    )
 
     # =====================================================
 

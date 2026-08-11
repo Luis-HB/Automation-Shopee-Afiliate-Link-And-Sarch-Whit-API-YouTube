@@ -1,5 +1,5 @@
 from models.ai_payload import AIPayload
-from ShopeeAffiliate.python.app.models.commercial_decision import AffiliateDecision
+from ShopeeAffiliate.python.app.models.commercial.commercial_decision import AffiliateDecision
 
 from agents.prompts.affiliate_system_prompt import (
     AffiliateSystemPrompt

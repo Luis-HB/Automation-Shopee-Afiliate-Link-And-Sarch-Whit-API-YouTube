@@ -1,10 +1,33 @@
-from services.commercial.product_commercial_analyzer import ProductCommercialAnalyzer
-from services.commercial.video_commercial_analyzer import VideoCommercialAnalyzer
-from services.commercial.ranking_commercial_analyzer import RankingCommercialAnalyzer
-from services.commercial.market_commercial_analyzer import MarketCommercialAnalyzer
+from services.analyzers.product_commercial_analyzer import (
+    ProductCommercialAnalyzer
+)
 
-from models.commercial_context import CommercialContext
+from services.analyzers.video_commercial_analyzer import (
+    VideoCommercialAnalyzer
+)
 
+from services.analyzers.ranking_commercial_analyzer import (
+    RankingCommercialAnalyzer
+)
+
+from services.analyzers.market_commercial_analyzer import (
+    MarketCommercialAnalyzer
+)
+
+from models.commercial.commercial_context import CommercialContext
+
+
+class CommercialContextBuilder:
+
+    def __init__(self):
+
+        self.product = ProductCommercialAnalyzer()
+
+        self.video = VideoCommercialAnalyzer()
+
+        self.ranking = RankingCommercialAnalyzer()
+
+        self.market = MarketCommercialAnalyzer()
 
 class CommercialContextBuilder:
 

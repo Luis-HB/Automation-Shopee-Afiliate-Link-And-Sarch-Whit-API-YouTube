@@ -44,10 +44,57 @@ YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 N8N_CONFIG = {
 
-    "publication_webhook": os.getenv(
-        "N8N_PUBLICATION_WEBHOOK",
-        "http://n8n:5678/webhook/publication"
+    "commercial_agent": os.getenv(
+
+        "N8N_COMMERCIAL_AGENT",
+
+        "http://n8n:5678/webhook/commercial-analysis"
+
     ),
+
+    "caption_agent": os.getenv(
+
+        "N8N_CAPTION_AGENT",
+
+        "http://n8n:5678/webhook/generate-caption"
+
+    ),
+
+    "script_agent": os.getenv(
+
+        "N8N_SCRIPT_AGENT",
+
+        "http://n8n:5678/webhook/generate-script"
+
+    ),
+
+    "publication_agent": os.getenv(
+
+        "N8N_PUBLICATION_AGENT",
+
+        "http://n8n:5678/webhook/publication"
+
+    ),
+
+    "timeout": int(
+
+        os.getenv(
+
+            "N8N_TIMEOUT",
+
+            "300"
+
+        )
+
+    ),
+
+    "verify_ssl": os.getenv(
+
+        "N8N_VERIFY_SSL",
+
+        "false"
+
+    ).lower() == "true"
 
 }
 
@@ -55,4 +102,10 @@ N8N_CONFIG = {
 # Ambiente
 # ======================================================
 
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+DEBUG = os.getenv(
+
+    "DEBUG",
+
+    "False"
+
+).lower() == "true"

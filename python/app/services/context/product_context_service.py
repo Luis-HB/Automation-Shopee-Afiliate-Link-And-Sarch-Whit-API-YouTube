@@ -3,17 +3,16 @@ from repositories.video_repository import VideoRepository
 from repositories.search_query_repository import SearchQueryRepository
 from repositories.search_result_repository import SearchResultRepository
 
+from models.product_context import ProductContext
+
 
 class ProductContextService:
 
     def __init__(self):
 
         self.products = ProductRepository()
-
         self.videos = VideoRepository()
-
         self.queries = SearchQueryRepository()
-
         self.results = SearchResultRepository()
 
     # =====================================================
@@ -41,26 +40,31 @@ class ProductContextService:
         for query in queries:
 
             results.extend(
-
                 self.results.find_by_query(
-
                     query.id
-
                 )
-
             )
 
-        return {
+        return ProductContext(
 
-            "product": product,
+            produto=product,
 
-            "queries": queries,
+            consultas=queries,
 
-            "videos": videos,
+            resultados=results,
 
-            "results": results
+            videos=videos,
 
-        }
+            metadata={
+                "service": "ProductContextService",
+                "version": "1.0",
+                "product_id": product_id,
+                "queries_count": len(queries),
+                "results_count": len(results),
+                "videos_count": len(videos)
+            }
+
+        )
 
     # =====================================================
 
