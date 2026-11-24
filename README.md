@@ -65,12 +65,13 @@ cd ShopeeAffiliate
 
 Bash:
 cp .env.example .env
-# Adicione suas chaves do YouTube e Shopee no arquivo .env
+# Adicione suas chaves de API do YouTube e Shopee no arquivo .env
 
 3- Suba o ambiente com Docker:
 
 Bash:
 docker-compose up -d --build
+
 4- Execute as migrações do banco de dados:
 
 Bash:
